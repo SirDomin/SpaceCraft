@@ -205,6 +205,7 @@ export class GameEngine {
             this.frameCount = 0;
             this.lastTime = currentTime;
         }
+
     }
 
     removeObject(objectId) {
