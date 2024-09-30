@@ -29,7 +29,7 @@ export class GameObject {
         this.collisionType = GameObject.COLLISION_TYPE_BOX;
         this.collisionChecks = 0;
         this.id = Utils.generateId();
-        this.color = 'red';
+        this.color = 'darkblue';
         this.speed = (20) * (Math.random() + 0.1);
         this.target = null;
         this.serverTick = false;

@@ -9,15 +9,15 @@ export class MapManager {
 
     constructor(map) {
         this.map = {
-            width: 10000,
-            height: 10000,
+            width: 1000,
+            height: 1000,
         };
         this.minimapSize = 200;
         this.scale = this.minimapSize / this.map.width;
         this.borderWidth = 5;
         this.borderColor = 'black';
 
-        this.particleSystem = new ParticleSystem(50000, this.map);
+        this.particleSystem = new ParticleSystem(500, this.map);
 
         eventHandler.addEventHandler(EventType.RENDER_MINIMAP, e => {
             this.renderMinimap(e.graphicEngine, e.objects, e.player)
@@ -65,11 +65,10 @@ export class MapManager {
 
     emitBackground(graphicEngine) {
         const gradient = graphicEngine.ctx.createLinearGradient(0, 0, this.map.width, this.map.height);
-        gradient.addColorStop(0, '#000022'); // Dark Blue
-        gradient.addColorStop(0.5, '#000011'); // Darker Blue
-        gradient.addColorStop(1, '#000000'); // Black
+        gradient.addColorStop(0, '#000022');
+        gradient.addColorStop(0.5, '#000011');
+        gradient.addColorStop(1, '#000000');
 
-        // Fill background with gradient
         graphicEngine.ctx.fillStyle = gradient;
         graphicEngine.ctx.fillRect(0, 0, this.map.width, this.map.height);
     }

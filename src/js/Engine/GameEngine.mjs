@@ -47,7 +47,7 @@ export class GameEngine {
 
         for (let i = 0; i < numObjectsPerRow; i++) {
             const obj = new GameObject(posX, posY, objectWidth, objectHeight);
-            obj.target = this.player;
+            // obj.target = this.player;
 
             this.gameObjects.push(obj);
 
@@ -86,10 +86,12 @@ export class GameEngine {
         this.player.changePosition(this.mapManager.map.width / 2, this.mapManager.map.height / 2);
         this.player.setMapBorders(this.mapManager.map.width, this.mapManager.map.height);
 
-        this.generateRandomGameObjects(100, 100, 100);
+        // this.generateRandomGameObjects(100, 100, 100);
+        this.generateStructuredGameObjects(10000, 10, 10);
     }
 
     handleMouseDown(mouse) {
+        return;
         const cameraOffsetX = Math.max(0, Math.min(this.player.x + this.player.width / 2 - this.viewportWidth / 2, this.mapManager.map.width - this.viewportWidth));
         const cameraOffsetY = Math.max(0, Math.min(this.player.y + this.player.height / 2 - this.viewportHeight / 2, this.mapManager.map.height - this.viewportHeight));
 
@@ -140,7 +142,6 @@ export class GameEngine {
 
         this.mapManager.updateAndRender(this.graphicEngine, this);
 
-        this.player.onRender(this.graphicEngine);
 
         this.getVisibleGameObjects()
             .filter(object => object !== this.player)
@@ -148,6 +149,8 @@ export class GameEngine {
                 gameObject.render(this.graphicEngine);
             })
         ;
+
+        this.player.onRender(this.graphicEngine);
 
         this.graphicEngine.restore();
 

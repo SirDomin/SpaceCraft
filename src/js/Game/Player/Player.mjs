@@ -13,12 +13,14 @@ export class Player extends GameObject {
         this.speed = 10;
 
         this.parts = [
-            new Part(this, 0, 20, 10, 10),
+            new Part(this, 20, 0, 10, 10),
         ];
         this.mapBorders = {
             width: 0,
             height: 0
         }
+
+        this.color = 'yellow'
 
         eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
 
@@ -100,7 +102,6 @@ export class Player extends GameObject {
             'cyan'
         );
 
-        // Restore the context to its original state
         graphicEngine.ctx.restore();
 
     }
@@ -109,6 +110,7 @@ export class Player extends GameObject {
         graphicEngine.rotate(this, this.rotation)
 
         graphicEngine.ctx.rotate(-Math.PI / 2);
+        window.collisionRendered = false;
         this.drawShip(graphicEngine);
 
         this.parts.forEach(part => {
@@ -119,9 +121,7 @@ export class Player extends GameObject {
     }
 
     drawShip(graphicEngine) {
-        // graphicEngine.drawSquare(-this.width / 2, -this.height / 2, this.width, this.height, 'blue');
-        graphicEngine.drawSquare(this.x, this.y, this.width, this.height, 'blue');
-
+        graphicEngine.drawSquare(-this.width / 2, -this.height / 2, this.width, this.height, 'blue');
     }
 
     update() {
@@ -237,6 +237,45 @@ export class Player extends GameObject {
         const otherVertices = obj.getVertices();
 
         return this.checkSAT(thisVertices, otherVertices);
+    }
+
+    getVertices() {
+        const halfWidth = this.width / 2;
+        const halfHeight = this.height / 2;
+        let cos = Math.cos(this.rotation -Math.PI / 2);
+        let sin = Math.sin(this.rotation - Math.PI / 2);
+
+        let vertices = [
+            { x: this.x + halfWidth + (-halfWidth * cos - -halfHeight * sin), y: this.y + halfHeight + (-halfWidth * sin + -halfHeight * cos) },
+            { x: this.x + halfWidth + (halfWidth * cos - -halfHeight * sin), y: this.y + halfHeight + (halfWidth * sin + -halfHeight * cos) },
+            { x: this.x + halfWidth + (halfWidth * cos - halfHeight * sin), y: this.y + halfHeight + (halfWidth * sin + halfHeight * cos) },
+            { x: this.x + halfWidth + (-halfWidth * cos - halfHeight * sin), y: this.y + halfHeight + (-halfWidth * sin + halfHeight * cos) },
+        ];
+
+        this.parts.forEach(part => {
+
+            const partCos = Math.cos(this.rotation + part.relativeX + part.width / 2);
+            const partSin = Math.sin(this.rotation + part.relativeY + part.height / 2);
+
+            const partCenterX = this.x + (part.relativeX - part.width * partCos - part.relativeY * partSin);
+            const partCenterY = this.y + (part.relativeX - part.height / 2 * partSin + part.relativeY * partCos);
+
+            vertices.push({ x: partCenterX, y: partCenterY });
+        });
+
+        const cameraOffsetX = Math.max(0, Math.min(gameEngine.player.x + gameEngine.player.width / 2 - gameEngine.viewportWidth / 2, gameEngine.mapManager.map.width - gameEngine.viewportWidth));
+        const cameraOffsetY = Math.max(0, Math.min(gameEngine.player.y + gameEngine.player.height / 2 - gameEngine.viewportHeight / 2, gameEngine.mapManager.map.height - gameEngine.viewportHeight));
+
+        if (window.collisionRendered === false) {
+            vertices.forEach(v => {
+                gameEngine.graphicEngine.drawSquare(v.x - cameraOffsetX, v.y - cameraOffsetY, 5, 5, 'red')
+            });
+
+            window.collisionRendered = true;
+        }
+
+
+        return vertices;
     }
 
     checkSAT(thisVertices, otherVertices) {
