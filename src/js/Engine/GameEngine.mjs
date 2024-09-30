@@ -194,7 +194,7 @@ export class GameEngine {
         this.handleRemovedObjects();
 
         this.render();
-
+        this.player.update();
         eventHandler.dispatchEvent(EventType.GAME_TICK, {gameObjects: this.gameObjects});
 
         this.renderMinimap();
