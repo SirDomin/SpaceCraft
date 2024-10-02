@@ -32,7 +32,7 @@ export class Part {
     }
 
     render(graphicEngine) {
-        graphicEngine.drawSquare(this.x, this.y, this.width, this.height, this.color)
+        graphicEngine.drawSquare(this.x, this.y, this.width, this.height, this.color);
     }
 
     getVertices() {

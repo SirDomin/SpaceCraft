@@ -88,8 +88,8 @@ export class GameEngine {
         this.player.changePosition(this.mapManager.map.width / 2, this.mapManager.map.height / 2);
         this.player.setMapBorders(this.mapManager.map.width, this.mapManager.map.height - this.offsetY);
 
-        this.generateRandomGameObjects(100, 100, 100);
-        // this.generateStructuredGameObjects(50000, 10, 10);
+        // this.generateRandomGameObjects(100, 100, 100);
+        this.generateStructuredGameObjects(50000, 10, 10);
     }
 
     handleMouseDown(mouse) {
@@ -159,6 +159,7 @@ export class GameEngine {
         this.graphicEngine.writeText(`FPS: ${Math.floor(this.fps)}`, 10, 10, 'yellow');
         this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow');
         this.graphicEngine.writeText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`, 10, 30, 'yellow');
+        this.graphicEngine.writeText(`Calculations: ${this.visibleObjectsCalculations}`, 10, 40, 'yellow');
 
         this.debug();
     }
@@ -185,7 +186,7 @@ export class GameEngine {
 
     frame(currentTime) {
         if (!this.lastTime) {
-            this.lastTime = currentTime; // Initialize lastTime on the first frame
+            this.lastTime = currentTime;
         }
 
         this.frameCount++;
@@ -199,13 +200,15 @@ export class GameEngine {
             })
         ;
 
-        const visibleObjects = this.getVisibleGameObjects();
+        const visibleObjects = this.getVisibleAndClosestObjects(this.player);
 
         for (const obj of visibleObjects) {
             if (this.player.checkCollision(obj)) {
                 this.removeObject(obj.id)
             }
         }
+
+        this.visibleObjectsCalculations = visibleObjects.length;
 
         this.handleRemovedObjects();
 
@@ -227,6 +230,26 @@ export class GameEngine {
     removeObject(objectId) {
         let index = this.gameObjects.findIndex(object => object.id === objectId);
         this.indexesToRemove.push(index);
+    }
+
+    getVisibleAndClosestObjects(referenceObject) {
+        const proximityThreshold = 100;
+
+        const visibleObjects = this.getVisibleGameObjects();
+
+        return visibleObjects.filter(object => {
+            const objectCenterX = object.x + object.width / 2;
+            const objectCenterY = object.y + object.height / 2;
+            const refCenterX = referenceObject.x + referenceObject.width / 2;
+            const refCenterY = referenceObject.y + referenceObject.height / 2;
+
+            const distanceX = Math.max(0, Math.abs(objectCenterX - refCenterX) - (object.width / 2 + referenceObject.width / 2));
+            const distanceY = Math.max(0, Math.abs(objectCenterY - refCenterY) - (object.height / 2 + referenceObject.height / 2));
+
+            const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+            return distance <= proximityThreshold;
+        });
     }
 
     getVisibleObjects(objects) {

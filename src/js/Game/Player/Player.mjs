@@ -14,8 +14,10 @@ export class Player extends GameObject {
 
         this.width = 20;
         this.parts = [
-            new Part(this, -10, 0, 10, 10),
-            new Part(this, 10, 0, 10, 10),
+            new Part(this, 30, -100, 10, 10),
+            new Part(this, 30, 30, 10, 10),
+            new Part(this, -30, -100, 10, 10),
+            new Part(this,  -30, 30, 10, 10),
         ];
 
         this.currentPart = null;
@@ -26,9 +28,6 @@ export class Player extends GameObject {
         }
 
         this.experience = 0;
-
-
-        this.parts[1].color = 'white';
 
         this.color = 'yellow'
 

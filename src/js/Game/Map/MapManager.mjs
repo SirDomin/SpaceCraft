@@ -9,8 +9,8 @@ export class MapManager {
 
     constructor(map) {
         this.map = {
-            width: 10000,
-            height: 10000,
+            width: 1000,
+            height: 1000,
         };
         this.minimapSize = 200;
         this.scale = this.minimapSize / this.map.width;
@@ -51,18 +51,6 @@ export class MapManager {
 
         this.particleSystem.updateAndRender(graphicEngine, gameEngine);
     }
-
-    drawNebula(graphicEngine, x, y, size, color) {
-        const nebulaGradient = graphicEngine.ctx.createRadialGradient(x, y, 0, x, y, size);
-        nebulaGradient.addColorStop(0, color);
-        nebulaGradient.addColorStop(1, 'transparent');
-
-        graphicEngine.ctx.fillStyle = nebulaGradient;
-        graphicEngine.ctx.beginPath();
-        graphicEngine.ctx.arc(x, y, size, 0, Math.PI * 2);
-        graphicEngine.ctx.fill();
-    }
-
 
     getBackgroundGradient(graphicEngine, x, y, width, height) {
         const gradient = graphicEngine.ctx.createRadialGradient(

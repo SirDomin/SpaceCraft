@@ -14,7 +14,7 @@ export class GraphicEngine {
 
         this.container.appendChild(this.canvas);
         this.canvas.style.width = '100vw'
-        this.canvas.style.height = '99vh'
+        this.canvas.style.height = '100vh'
 
         window.addEventListener('resize', () => {
             this.updateCanvas();
