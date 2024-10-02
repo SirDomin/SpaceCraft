@@ -7,7 +7,7 @@ import {EventType} from "./Event/EventType.mjs";
 window.gameScale = 1.3;
 window.eventHandler = new EventHandler();
 window.debug = false;
-window.collisionRendered = false;
+window.renderCollisions = true;
 
 const graphicEngine = new GraphicEngine(document.body);
 

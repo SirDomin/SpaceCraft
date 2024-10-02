@@ -1,11 +1,15 @@
 export class Part {
     constructor(player, x, y, width, height) {
         this.player = player;
-        y +=  height;
         if (x < 0) {
-            x -= width;
+            x = x - this.player.width;
         } else {
-            x = this.player.width;
+            x = x + width;
+        }
+        if (y < 0) {
+            y += height + this.player.height / 2
+        } else {
+            y -= height
         }
         this.relativeX = x;
         this.relativeY = y;
@@ -19,6 +23,8 @@ export class Part {
 
         this.x = this.baseX - this.relativeX;
         this.y = this.baseY - this.relativeY;
+
+        return this;
     }
 
     update() {

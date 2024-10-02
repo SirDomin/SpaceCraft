@@ -12,14 +12,23 @@ export class Player extends GameObject {
         this.rotationSpeed = 2.5;
         this.speed = 10;
 
+        this.width = 20;
         this.parts = [
-            new Part(this, 0, 0, 20, 30),
-            new Part(this, -10, 0, 20, 30),
+            new Part(this, -10, 0, 10, 10),
+            new Part(this, 10, 0, 10, 10),
         ];
+
+        this.currentPart = null;
+
         this.mapBorders = {
             width: 0,
             height: 0
         }
+
+        this.experience = 0;
+
+
+        this.parts[1].color = 'white';
 
         this.color = 'yellow'
 
@@ -125,12 +134,6 @@ export class Player extends GameObject {
     }
 
     update() {
-        const cameraOffsetX = Math.max(0, Math.min(gameEngine.player.x + gameEngine.player.width / 2 - gameEngine.viewportWidth / 2, gameEngine.mapManager.map.width - gameEngine.viewportWidth));
-        const cameraOffsetY = Math.max(0, Math.min(gameEngine.player.y + gameEngine.player.height / 2 - gameEngine.viewportHeight / 2, gameEngine.mapManager.map.height - gameEngine.viewportHeight));
-
-        this.getVertices(true).forEach(v => {
-            gameEngine.graphicEngine.drawSquare(v.x - cameraOffsetX, v.y - cameraOffsetY, 5, 5, 'red')
-        });
     }
 
     moveBackward() {

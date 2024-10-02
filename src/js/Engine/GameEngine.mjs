@@ -2,6 +2,7 @@ import {EventType} from "../Event/EventType.mjs";
 import {GameObject} from "../Game/Object/GameObject.mjs";
 import {MapManager} from "../Game/Map/MapManager.mjs";
 import {Nebula} from "../Game/Object/Nebula.mjs";
+import {UIManager} from "../Ui/UIManager.mjs";
 
 export class GameEngine {
     graphicEngine;
@@ -17,13 +18,14 @@ export class GameEngine {
 
         this.viewportWidth = this.graphicEngine.canvas.width;
         this.viewportHeight = this.graphicEngine.canvas.height;
-        this.mapManager = new MapManager().setPosition(graphicEngine.canvas.width, graphicEngine.canvas.height).setSize(100);
-
+        this.mapManager = new MapManager().setPosition(graphicEngine.canvas.width, 75).setSize(70);
+        this.uiManager = new UIManager();
         this.lastTime = 0; // Time of the last frame
         this.frameCount = 0; // Number of frames counted
         this.fps = 0; // FPS value
         this.accumulatedTime = 0;
 
+        this.offsetY = 75;
         eventHandler.addEventHandler(EventType.PLAYER_ROTATE, (data) => {
             this.updateCamera(data.rotation);
         }, 'player.rotation', false, 10)
@@ -67,7 +69,7 @@ export class GameEngine {
     getCameraPosition() {
         const cameraX = Math.max(0, Math.min(this.player.x + this.player.width / 2 - this.viewportWidth / 2, this.mapManager.map.width - this.viewportWidth));
         const cameraY = Math.max(0, Math.min(this.player.y + this.player.height / 2 - this.viewportHeight / 2, this.mapManager.map.height - this.viewportHeight));
-        return { x: cameraX, y: cameraY };
+        return { x: cameraX, y: cameraY - this.offsetY };
     }
 
     updateCamera() {
@@ -84,16 +86,15 @@ export class GameEngine {
         this.gameObjects.push(this.player);
 
         this.player.changePosition(this.mapManager.map.width / 2, this.mapManager.map.height / 2);
-        this.player.setMapBorders(this.mapManager.map.width, this.mapManager.map.height);
+        this.player.setMapBorders(this.mapManager.map.width, this.mapManager.map.height - this.offsetY);
 
-        // this.generateRandomGameObjects(100, 100, 100);
-        this.generateStructuredGameObjects(10000, 10, 10);
+        this.generateRandomGameObjects(100, 100, 100);
+        // this.generateStructuredGameObjects(50000, 10, 10);
     }
 
     handleMouseDown(mouse) {
-        return;
-        const cameraOffsetX = Math.max(0, Math.min(this.player.x + this.player.width / 2 - this.viewportWidth / 2, this.mapManager.map.width - this.viewportWidth));
-        const cameraOffsetY = Math.max(0, Math.min(this.player.y + this.player.height / 2 - this.viewportHeight / 2, this.mapManager.map.height - this.viewportHeight));
+        const cameraOffsetX = this.getCameraPosition().x;
+        const cameraOffsetY = this.getCameraPosition().y;
 
         const selectedObject =
             this.getVisibleGameObjects().find(object => {
@@ -142,7 +143,6 @@ export class GameEngine {
 
         this.mapManager.updateAndRender(this.graphicEngine, this);
 
-
         this.getVisibleGameObjects()
             .filter(object => object !== this.player)
             .forEach(gameObject => {
@@ -154,8 +154,24 @@ export class GameEngine {
 
         this.graphicEngine.restore();
 
-        this.graphicEngine.writeText(`FPS: ${Math.floor(this.fps)}`, 10, 10, 'yellow')
-        this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow')
+        this.uiManager.render(this.graphicEngine);
+        this.graphicEngine.drawSquare(0, 0, this.viewportWidth, this.offsetY, 'black');
+        this.graphicEngine.writeText(`FPS: ${Math.floor(this.fps)}`, 10, 10, 'yellow');
+        this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow');
+        this.graphicEngine.writeText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`, 10, 30, 'yellow');
+
+        this.debug();
+    }
+
+    debug() {
+        if (window.renderCollisions === true) {
+            const cameraOffsetX = this.getCameraPosition().x;
+            const cameraOffsetY = this.getCameraPosition().y;
+
+            this.player.getVertices(true).forEach(v => {
+                gameEngine.graphicEngine.drawSquare(v.x - cameraOffsetX - 1, v.y - cameraOffsetY - 1, 2, 2, 'red')
+            });
+        }
     }
 
     start() {
@@ -214,8 +230,8 @@ export class GameEngine {
     }
 
     getVisibleObjects(objects) {
-        const cameraOffsetX = Math.max(0, Math.min(this.player.x + this.player.width / 2 - this.viewportWidth / 2, this.mapManager.map.width - this.viewportWidth));
-        const cameraOffsetY = Math.max(0, Math.min(this.player.y + this.player.height / 2 - this.viewportHeight / 2, this.mapManager.map.height - this.viewportHeight));
+        const cameraOffsetX = this.getCameraPosition().x;
+        const cameraOffsetY = this.getCameraPosition().y;
 
         return objects.filter(object => {
             const objectRight = object.x + object.width;
@@ -233,8 +249,8 @@ export class GameEngine {
     }
 
     getVisibleGameObjects() {
-        const cameraOffsetX = Math.max(0, Math.min(this.player.x + this.player.width / 2 - this.viewportWidth / 2, this.mapManager.map.width - this.viewportWidth));
-        const cameraOffsetY = Math.max(0, Math.min(this.player.y + this.player.height / 2 - this.viewportHeight / 2, this.mapManager.map.height - this.viewportHeight));
+        const cameraOffsetX = this.getCameraPosition().x;
+        const cameraOffsetY = this.getCameraPosition().y;
 
         return this.gameObjects.filter(object => {
             const objectRight = object.x + object.width;
