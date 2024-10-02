@@ -14,10 +14,11 @@ export class MapManager {
         };
         this.minimapSize = 200;
         this.scale = this.minimapSize / this.map.width;
-        this.borderWidth = 5;
-        this.borderColor = 'black';
+        this.borderWidth = 2;
+        this.borderColor = 'white';
+        this.color = 'black';
 
-        this.particleSystem = new ParticleSystem(50000, this.map);
+        this.particleSystem = new ParticleSystem(this.map.width, this.map);
 
         eventHandler.addEventHandler(EventType.RENDER_MINIMAP, e => {
             this.renderMinimap(e.graphicEngine, e.objects, e.player)
@@ -63,21 +64,36 @@ export class MapManager {
     }
 
 
-    emitBackground(graphicEngine) {
-        const gradient = graphicEngine.ctx.createLinearGradient(0, 0, this.map.width, this.map.height);
-        gradient.addColorStop(0, '#000022'); // Dark Blue
-        gradient.addColorStop(0.5, '#000011'); // Darker Blue
-        gradient.addColorStop(1, '#000000'); // Black
+    getBackgroundGradient(graphicEngine, x, y, width, height) {
+        const gradient = graphicEngine.ctx.createRadialGradient(
+            x + width / 2, y + height / 2, 0, // Inner circle (center, start radius)
+            x + width / 2, y + height / 2, width / 2 // Outer circle (center, end radius)
+        );
 
-        // Fill background with gradient
-        graphicEngine.ctx.fillStyle = gradient;
-        graphicEngine.ctx.fillRect(0, 0, this.map.width, this.map.height);
+        const colors = [
+            '#000055', '#00004D', '#000045', '#00003D', '#000035',
+            '#00002D', '#000025', '#00001D', '#000015', '#000000'
+        ];
+
+        for (let i = 0; i < colors.length; i++) {
+            gradient.addColorStop(i / (colors.length - 1), colors[i]);
+        }
+
+        return gradient;
+    }
+    emitBackground(graphicEngine, x = 0, y = 0, width = this.map.width, height = this.map.height) {
+        graphicEngine.ctx.fillStyle = this.getBackgroundGradient(graphicEngine, x, y, width, height);
+        graphicEngine.ctx.fillRect(x, y, width, height);
     }
 
     renderMinimap(graphicEngine, objects, player) {
         graphicEngine.ctx.clearRect(this.x , this.y, this.minimapSize, this.minimapSize);
 
         graphicEngine.drawSquare(this.x - this.borderWidth, this.y - this.borderWidth, this.minimapSize + this.borderWidth * 2, this.minimapSize + this.borderWidth * 2, this.borderColor)
+
+        graphicEngine.ctx.fillStyle = this.getBackgroundGradient(graphicEngine, this.x, this.y, this.minimapSize, this.minimapSize);
+        graphicEngine.ctx.fillRect(this.x, this.y, this.minimapSize, this.minimapSize);
+
         objects.filter(object => object !== player).forEach(obj => {
             obj.renderOnMinimap({scale: this.scale, x: this.x, y: this.y}, graphicEngine)
         });

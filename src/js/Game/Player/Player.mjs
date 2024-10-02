@@ -12,13 +12,25 @@ export class Player extends GameObject {
         this.rotationSpeed = 2.5;
         this.speed = 10;
 
+        this.width = 20;
         this.parts = [
-            new Part(this, 0, 20, 10, 10),
+            new Part(this, -10, 0, 10, 10),
+            new Part(this, 10, 0, 10, 10),
         ];
+
+        this.currentPart = null;
+
         this.mapBorders = {
             width: 0,
             height: 0
         }
+
+        this.experience = 0;
+
+
+        this.parts[1].color = 'white';
+
+        this.color = 'yellow'
 
         eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
 
@@ -100,7 +112,6 @@ export class Player extends GameObject {
             'cyan'
         );
 
-        // Restore the context to its original state
         graphicEngine.ctx.restore();
 
     }
@@ -119,34 +130,28 @@ export class Player extends GameObject {
     }
 
     drawShip(graphicEngine) {
-        // graphicEngine.drawSquare(-this.width / 2, -this.height / 2, this.width, this.height, 'blue');
-        graphicEngine.drawSquare(this.x, this.y, this.width, this.height, 'blue');
-
+        graphicEngine.drawSquare(-this.width / 2, -this.height / 2, this.width, this.height, 'blue');
     }
 
     update() {
-
     }
 
     moveBackward() {
         const newX = this.x - Math.cos(this.rotation) * this.speed;
         const newY = this.y - Math.sin(this.rotation) * this.speed;
 
-        // Temporarily set the new position to calculate new vertices
         const originalX = this.x;
         const originalY = this.y;
         this.x = newX;
         this.y = newY;
 
-        const vertices = this.getVertices();
+        const vertices = this.getVertices(true);
 
-        // Check if any vertex is out of bounds
         const isWithinBounds = vertices.every(vertex =>
             vertex.x >= 0 && vertex.x <= this.mapBorders.width &&
             vertex.y >= 0 && vertex.y <= this.mapBorders.height
         );
 
-        // Restore original position if out of bounds
         if (isWithinBounds) {
             this.x = newX;
             this.y = newY;
@@ -166,7 +171,7 @@ export class Player extends GameObject {
         this.x = newX;
         this.y = newY;
 
-        const vertices = this.getVertices();
+        const vertices = this.getVertices(true);
 
         const isWithinBoundsX = vertices.every(vertex =>
             vertex.x >= 0 && vertex.x <= this.mapBorders.width
@@ -209,7 +214,7 @@ export class Player extends GameObject {
             this.rotation -= 2 * Math.PI;
         }
 
-        const vertices = this.getVertices();
+        const vertices = this.getVertices(true);
 
         const isWithinBounds = vertices.every(vertex =>
             vertex.x >= 0 && vertex.x <= this.mapBorders.width &&
@@ -236,7 +241,40 @@ export class Player extends GameObject {
         const thisVertices = this.getVertices();
         const otherVertices = obj.getVertices();
 
+        for (let x = 0; x < this.parts.length; x++) {
+            if (this.checkSAT(this.parts[x].getVertices(), otherVertices) === true) {
+                return true;
+            }
+        }
+
         return this.checkSAT(thisVertices, otherVertices);
+    }
+
+    getVertices(parts = false) {
+        const halfWidth = this.width / 2;
+        const halfHeight = this.height / 2;
+        let cos = Math.cos(this.rotation - Math.PI / 2);
+        let sin = Math.sin(this.rotation - Math.PI / 2);
+
+        let vertices = [
+            { x: this.x + halfWidth + (-halfWidth * cos - -halfHeight * sin), y: this.y + halfHeight + (-halfWidth * sin + -halfHeight * cos) },
+            { x: this.x + halfWidth + (halfWidth * cos - -halfHeight * sin), y: this.y + halfHeight + (halfWidth * sin + -halfHeight * cos) },
+            { x: this.x + halfWidth + (halfWidth * cos - halfHeight * sin), y: this.y + halfHeight + (halfWidth * sin + halfHeight * cos) },
+            { x: this.x + halfWidth + (-halfWidth * cos - halfHeight * sin), y: this.y + halfHeight + (-halfWidth * sin + halfHeight * cos) },
+        ];
+
+        if (parts) {
+            this.parts.forEach(part => {
+                const partVertices = part.getVertices();
+
+                partVertices.forEach(partVertice => {
+                    vertices.push(partVertice);
+                })
+            });
+        }
+
+
+        return vertices;
     }
 
     checkSAT(thisVertices, otherVertices) {
@@ -261,7 +299,7 @@ export class Player extends GameObject {
         let max = -Infinity;
 
         for (const vertex of vertices) {
-            const projection = (vertex.x * axis.x + vertex.y * axis.y); // Dot product
+            const projection = (vertex.x * axis.x + vertex.y * axis.y);
             min = Math.min(min, projection);
             max = Math.max(max, projection);
         }

@@ -7,6 +7,7 @@ import {EventType} from "./Event/EventType.mjs";
 window.gameScale = 1.3;
 window.eventHandler = new EventHandler();
 window.debug = false;
+window.renderCollisions = true;
 
 const graphicEngine = new GraphicEngine(document.body);
 
@@ -21,7 +22,7 @@ gameEngine.start();
 //     player.changePosition(graphicEngine.canvas.width / 2, graphicEngine.canvas.height / 2)
 // }, 'player-create')
 
-const player = new Player(5, 10, 10, 100);
+const player = new Player(5, 10, 10, 50);
 
 
 gameEngine.addPlayer(player);
