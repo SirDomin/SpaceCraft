@@ -19,7 +19,7 @@ export class GameEngine {
         this.viewportWidth = this.graphicEngine.canvas.width;
         this.viewportHeight = this.graphicEngine.canvas.height;
         this.mapManager = new MapManager().setPosition(graphicEngine.canvas.width, 75).setSize(70);
-        this.uiManager = new UIManager();
+        this.uiManager = new UIManager(this);
         this.lastTime = 0; // Time of the last frame
         this.frameCount = 0; // Number of frames counted
         this.fps = 0; // FPS value
@@ -88,13 +88,23 @@ export class GameEngine {
         this.player.changePosition(this.mapManager.map.width / 2, this.mapManager.map.height / 2);
         this.player.setMapBorders(this.mapManager.map.width, this.mapManager.map.height - this.offsetY);
 
-        // this.generateRandomGameObjects(100, 100, 100);
-        this.generateStructuredGameObjects(50000, 10, 10);
+        this.player.setCamera(this.viewportWidth, this.viewportHeight);
+
+        this.generateRandomGameObjects(100, 100, 100);
+        // this.generateStructuredGameObjects(50000, 10, 10);
+
+        this.uiManager.generateUI();
     }
 
     handleMouseDown(mouse) {
         const cameraOffsetX = this.getCameraPosition().x;
         const cameraOffsetY = this.getCameraPosition().y;
+
+        const playerElementClicked = this.player.checkClick(mouse);
+
+        if (playerElementClicked) {
+            return true;
+        }
 
         const selectedObject =
             this.getVisibleGameObjects().find(object => {
@@ -160,6 +170,12 @@ export class GameEngine {
         this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow');
         this.graphicEngine.writeText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`, 10, 30, 'yellow');
         this.graphicEngine.writeText(`Calculations: ${this.visibleObjectsCalculations}`, 10, 40, 'yellow');
+
+        this.interfaceElements.forEach(interfaceElement => {
+            interfaceElement.render(this.graphicEngine);
+        });
+
+        this.player.renderUi(this.graphicEngine);
 
         this.debug();
     }
@@ -292,6 +308,10 @@ export class GameEngine {
 
     addGameObject(gameObject) {
         this.gameObjects.push(gameObject);
+    }
+
+    addInterfaceElement(interfaceElement) {
+        this.interfaceElements.push(interfaceElement);
     }
 
     handleRemovedObjects() {

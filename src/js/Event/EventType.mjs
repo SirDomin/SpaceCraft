@@ -7,4 +7,5 @@ export class EventType {
     static PLAYER_UPDATE = 'playerupdate';
     static PLAYER_ROTATE = 'playerrotate';
     static RENDER_MINIMAP = 'renderminimap';
+    static ACTIVATE_SLOT = 'activateslot';
 }

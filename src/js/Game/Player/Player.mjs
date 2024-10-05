@@ -1,6 +1,10 @@
 import {GameObject} from "../Object/GameObject.mjs";
 import {EventType} from "../../Event/EventType.mjs";
 import {Part} from "./Part.mjs";
+import {Bar} from "../Interface/Element/Bar.mjs";
+import {WeaponSlot} from "../Interface/Element/WeaponSlot.mjs";
+import {InterfaceType} from "../Interface/InterfaceType.mjs";
+import {Resource} from "./Resource.mjs";
 
 export class Player extends GameObject {
 
@@ -12,17 +16,37 @@ export class Player extends GameObject {
         this.rotationSpeed = 2.5;
         this.speed = 10;
 
+
         this.width = 20;
         this.parts = [
-            new Part(this, 30, -100, 10, 10),
-            new Part(this, 30, 30, 10, 10),
-            new Part(this, -30, -100, 10, 10),
-            new Part(this,  -30, 30, 10, 10),
+            Part.fromJSON(this, loader.getResource('parts', 'Engine 1')),
+            Part.fromJSON(this, loader.getResource('parts', 'Engine 2')),
+            Part.fromJSON(this, loader.getResource('parts', 'Fuel Tank')),
+            // new Part(this, 30, -100, 10, 10),
+            // new Part(this, 30, 30, 10, 10),
+            // new Part(this, -30, -100, 10, 10),
+            // new Part(this,  -30, 30, 10, 10),
         ];
+
+
+        console.log(this.parts);
+
+        this.resources = {
+            energy: new Resource(Resource.ENERGY, 100, 50),
+            fuel: new Resource(Resource.FUEL, 100, 50),
+            health: new Resource(Resource.HEALTH, 100, 33)
+        }
 
         this.currentPart = null;
 
+        this.weaponSlots = [];
+
         this.mapBorders = {
+            width: 0,
+            height: 0
+        }
+
+        this.camera = {
             width: 0,
             height: 0
         }
@@ -30,8 +54,6 @@ export class Player extends GameObject {
         this.experience = 0;
 
         this.color = 'yellow'
-
-        eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
 
         eventHandler.addEventHandler(EventType.PLAYER_RENDER, (eventData) => {
             this.render(eventData.graphicEngine)
@@ -51,7 +73,53 @@ export class Player extends GameObject {
 
         eventHandler.addKeyHandler(40, () => {
             this.moveBackward()
-        })
+        });
+
+        const keyCodes = [49, 50, 51, 52, 53, 54, 55, 56, 57, 48];
+
+        keyCodes.forEach((keyCode, index) => {
+            eventHandler.addKeyHandler(keyCode, () => {
+                this.activateSlot(index);
+            }, true);
+        });
+
+        eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
+    }
+
+    setCamera(width, height) {
+        this.camera.width = width;
+        this.camera.height = height;
+
+        this.preparePlayerInterface();
+    }
+
+    preparePlayerInterface() {
+        const boxWidth = 50;
+        const boxHeight = 50;
+        const spacing = 10;
+        const numBoxes = 10;
+
+        const totalWidth = numBoxes * boxWidth + (numBoxes - 1) * spacing;
+
+        const startX = (this.camera.width - totalWidth) / 2;
+
+        this.posX = startX;
+        let x = 0;
+        let y = this.camera.height - boxHeight - 20;
+
+        for (let i = 0; i < numBoxes; i++) {
+            x = startX + i * (boxWidth + spacing);
+
+            const weaponSlot = new WeaponSlot(x, y, boxWidth, boxHeight);
+
+            this.weaponSlots.push(weaponSlot);
+        }
+        const width = x - startX + boxWidth;
+
+        y -= 20;
+        this.energyBar = new Bar(startX, y, width, 10, '#00CCFF');
+        this.fuelBar = new Bar(startX, y - 14, width, 10, '#FFCC00');
+        this.healthBar = new Bar(startX, y - 28, width, 10, '#FF4C4C');
     }
 
     dispatchRotation() {
@@ -60,22 +128,26 @@ export class Player extends GameObject {
 
     onClick() {
         super.onClick();
+    }
 
-        eventHandler.addEventHandler(EventType.PLAYER_RENDER, (eventData) => {
-            if (eventData.object === this) {
-                eventData.graphicEngine.drawSquare(eventData.object.x - 2, eventData.object.y - 2, eventData.object.width + 4, eventData.object.height + 4, 'black')
-            }
-        }, 'player.renderBorder', true, 20).debug = false;
+    checkClick(mouse) {
+        const subElementsClicked =
+            this.weaponSlots.find(object => {
+                return (
+                    mouse.x >= object.x &&
+                    mouse.x <= object.x + object.width &&
+                    mouse.y >= object.y &&
+                    mouse.y <= object.y + object.height
+                );
+            })
+        ;
 
-        eventHandler.addMouseHandler('mouseup', (mouse) => {
-            eventHandler.removeMouseHandler('player.moveTo');
-            eventHandler.removeHandler('player.renderBorder');
-            eventHandler.removeMouseHandler('player.simulateMove');
-        }, 'player.moveTo', true)
+        if (subElementsClicked) {
+            subElementsClicked.onClick();
+            return true;
+        }
 
-        eventHandler.addMouseHandler('mousemove', mouse => {
-            this.changePosition(mouse.x, mouse.y);
-        }, 'player.simulateMove', true).forObject(this).debug = false;
+        return false;
     }
 
     changePosition(x, y) {
@@ -112,7 +184,6 @@ export class Player extends GameObject {
         );
 
         graphicEngine.ctx.restore();
-
     }
 
     render(graphicEngine) {
@@ -128,11 +199,32 @@ export class Player extends GameObject {
         graphicEngine.restore()
     }
 
+    renderUi(graphicEngine) {
+        this.weaponSlots.forEach(weaponSlot => {
+            weaponSlot.render(graphicEngine);
+        });
+
+        this.healthBar.render(graphicEngine);
+        this.energyBar.render(graphicEngine);
+        this.fuelBar.render(graphicEngine);
+
+
+    }
+
     drawShip(graphicEngine) {
         graphicEngine.drawSquare(-this.width / 2, -this.height / 2, this.width, this.height, 'blue');
     }
 
     update() {
+        eventHandler.dispatchEvent(EventType.PLAYER_UPDATE, {object: this});
+
+        this.parts.forEach(part => {
+            part.update();
+        })
+
+        this.healthBar.update(this.resources.health.amount(), this.resources.health.max(), 0);
+        this.fuelBar.update(this.resources.fuel.amount(), this.resources.fuel.max(), 0);
+        this.energyBar.update(this.resources.energy.amount(), this.resources.energy.max(), 0);
     }
 
     moveBackward() {
@@ -161,6 +253,7 @@ export class Player extends GameObject {
 
         return this;
     }
+
     moveForward() {
         const newX = this.x + Math.cos(this.rotation) * this.speed;
         const newY = this.y + Math.sin(this.rotation) * this.speed;
@@ -227,6 +320,12 @@ export class Player extends GameObject {
         this.dispatchRotation();
 
         return this;
+    }
+
+    activateSlot(number) {
+        const weaponSlots = this.gameEngine.interfaceElements.filter(element => element.type === InterfaceType.WEAPON_SLOT);
+
+        weaponSlots[number].trigger(this);
     }
 
     setMapBorders(width, height) {

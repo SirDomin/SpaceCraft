@@ -1,0 +1,100 @@
+[
+  {
+    "name": "Engine 1",
+    "x": -10,
+    "y": -10,
+    "width": 10,
+    "height": 10,
+    "color": "blue",
+    "resourceUsage": {
+      "type": "FUEL",
+      "cost": -1,
+      "usage": "second",
+      "interval": 1
+    }
+  },
+  {
+    "name": "Engine 2",
+    "x": 10,
+    "y": -10,
+    "width": 10,
+    "height": 10,
+    "color": "blue",
+    "resourceUsage": {
+      "type": "FUEL",
+      "cost": -1,
+      "usage": "second",
+      "interval": 1
+    }
+  },
+  {
+    "name": "Fuel Tank",
+    "x": 10,
+    "y": 10,
+    "width": 15,
+    "height": 10,
+    "color": "green",
+    "resourceUsage": {
+      "type": "FUEL",
+      "cost": 3,
+      "usage": "second",
+      "interval": 1
+    }
+  },
+  {
+    "name": "Battery",
+    "x": -30,
+    "y": -15,
+    "width": 50,
+    "height": 50,
+    "color": "yellow",
+    "resourceUsage": {
+      "type": "ENERGY",
+      "cost": -4,
+      "usage": "second",
+      "interval": 8
+    }
+  },
+  {
+    "name": "Laser Cannon",
+    "x": -50,
+    "y": 40,
+    "width": 90,
+    "height": 25,
+    "color": "red",
+    "resourceUsage": {
+      "type": "ENERGY",
+      "cost": -5,
+      "usage": "shot",
+      "interval": 1
+    }
+  },
+  {
+    "name": "Armor Plating",
+    "x": 25,
+    "y": -25,
+    "width": 100,
+    "height": 70,
+    "color": "gray",
+    "resourceUsage": {
+      "type": "HEALTH",
+      "cost": -1,
+      "usage": "second",
+      "interval": 20
+    }
+  },
+  {
+    "name": "Fuel Tank",
+    "x": 0,
+    "y": 0,
+    "width": 70,
+    "height": 50,
+    "color": "orange",
+    "resourceUsage": {
+      "type": "FUEL",
+      "cost": -6,
+      "usage": "second",
+      "interval": 15
+    }
+  }
+]

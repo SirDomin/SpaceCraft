@@ -45,18 +45,17 @@ export class InterfaceObject {
 
     }
 
-    render(canvas) {
-        canvas.drawSquare(
+    render(graphicEngine) {
+        graphicEngine.drawSquare(
             this.x - this.borderWidth / 2,
             this.y - this.borderWidth / 2,
             this.width + this.borderWidth / 2,
             this.height + this.borderWidth / 2, this.borderColor
         );
-        canvas.drawSquare(this.x, this.y, this.width, this.height, this.color);
+        graphicEngine.drawSquare(this.x, this.y, this.width, this.height, this.color);
     }
 
     onClick() {
-        this.color = 'yellow';
     }
 
     getVertices() {
