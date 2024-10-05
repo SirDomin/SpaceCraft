@@ -9,8 +9,8 @@ export class MapManager {
 
     constructor(map) {
         this.map = {
-            width: 100000,
-            height: 100000,
+            width: 1000,
+            height: 1000,
         };
         this.minimapSize = 200;
         this.scale = this.minimapSize / this.map.width;

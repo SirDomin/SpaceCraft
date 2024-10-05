@@ -23,14 +23,18 @@ window.loader.loadAllResources().then(() => {
 
     gameEngine.start();
 
+    eventHandler.addEventHandler(EventType.GAME_TICK, e => {
+        eventHandler.tick();
+    }, 'game-tick').debug = false
+
+    eventHandler.addMouseHandler('mousedown', (mouse) => {
+        player.handleMouseDown(mouse);
+        return gameEngine.handleMouseDown(mouse);
+    }, 'engine-keydown', true).setPriority(0)
 });
 
-eventHandler.addEventHandler(EventType.GAME_TICK, e => {
-    eventHandler.tick();
-}, 'game-tick').debug = false
 
-eventHandler.addMouseHandler('mousedown', (mouse) => {
-    return gameEngine.handleMouseDown(mouse);
-}, 'engine-keydown', true).setPriority(0)
+
+
 
 

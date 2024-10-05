@@ -17,11 +17,12 @@ export class Player extends GameObject {
         this.speed = 10;
 
 
+        this.maxPartDistance = 100;
         this.width = 20;
         this.parts = [
-            Part.fromJSON(this, loader.getResource('parts', 'Engine 1')),
-            Part.fromJSON(this, loader.getResource('parts', 'Engine 2')),
-            Part.fromJSON(this, loader.getResource('parts', 'Fuel Tank')),
+            // Part.fromJSON(this, loader.getResource('parts', 'Engine 1')),
+            // Part.fromJSON(this, loader.getResource('parts', 'Engine 2')),
+            // Part.fromJSON(this, loader.getResource('parts', 'Fuel Tank')),
             // new Part(this, 30, -100, 10, 10),
             // new Part(this, 30, 30, 10, 10),
             // new Part(this, -30, -100, 10, 10),
@@ -53,7 +54,7 @@ export class Player extends GameObject {
 
         this.experience = 0;
 
-        this.color = 'yellow'
+        this.color = 'blue'
 
         eventHandler.addEventHandler(EventType.PLAYER_RENDER, (eventData) => {
             this.render(eventData.graphicEngine)
@@ -85,6 +86,47 @@ export class Player extends GameObject {
 
         eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
     }
+
+    getDistanceTo(object) {
+
+        const offset = this.camera.width / 2 > this.mapBorders.width / 2 ? this.mapBorders.width / 2 : this.camera.width / 2;
+
+        const middleX1 = this.x + (this.width / 2);
+        const middleY1 = this.y + (this.height / 2);
+
+        const middleX2 = object.x - offset + (object.width / 2);
+        const middleY2 = object.y + (object.height / 2);
+
+        const deltaX = middleX2 - middleX1;
+        const deltaY = middleY2 - middleY1;
+
+        return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
+
+    handleMouseDown(mouse) {
+        const offset = this.camera.width / 2 > this.mapBorders.width / 2 ? this.mapBorders.width / 2 : this.camera.width / 2;
+        const x = mouse.x - offset;
+        const y = mouse.y - this.camera.height / 2 - 75;
+
+        if (!(Math.abs(x) <= this.maxPartDistance && Math.abs(y) <= this.maxPartDistance)) {
+            console.log('too big');
+            return;
+        }
+
+        const part = new Part(this, x, y, 5, 5, 'yellow', {
+            type: Resource.HEALTH,
+            cost: 1,
+            usage: 'second',
+            interval: 1,
+            currentInterval: 0,
+        }, 'test')
+
+        part.x = -x - 2;
+        part.y = -y - 2;
+
+        this.parts.push(part)
+    }
+
 
     setCamera(width, height) {
         this.camera.width = width;
@@ -120,6 +162,7 @@ export class Player extends GameObject {
         this.energyBar = new Bar(startX, y, width, 10, '#00CCFF');
         this.fuelBar = new Bar(startX, y - 14, width, 10, '#FFCC00');
         this.healthBar = new Bar(startX, y - 28, width, 10, '#FF4C4C');
+
     }
 
     dispatchRotation() {
@@ -207,12 +250,10 @@ export class Player extends GameObject {
         this.healthBar.render(graphicEngine);
         this.energyBar.render(graphicEngine);
         this.fuelBar.render(graphicEngine);
-
-
     }
 
     drawShip(graphicEngine) {
-        graphicEngine.drawSquare(-this.width / 2, -this.height / 2, this.width, this.height, 'blue');
+        graphicEngine.drawSquare(-this.width / 2, -this.height / 2, this.width, this.height, this.color);
     }
 
     update() {

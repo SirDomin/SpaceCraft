@@ -1,6 +1,5 @@
 import {EntityTypes} from "./EntityTypes.mjs";
 import {Utils} from "../../Utils/Utils.mjs";
-import {EventType} from "../../Event/EventType.mjs";
 
 export class GameObject {
     x;
@@ -55,6 +54,18 @@ export class GameObject {
 
     }
 
+    getDistanceTo(object) {
+        const middleX1 = this.x + (this.width / 2);
+        const middleY1 = this.y + (this.height / 2);
+
+        const middleX2 = object.x + (object.width / 2);
+        const middleY2 = object.y + (object.height / 2);
+
+        const deltaX = middleX2 - middleX1;
+        const deltaY = middleY2 - middleY1;
+        return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
+
     render(canvas) {
         canvas.drawSquare(this.x, this.y, this.width, this.height, this.color);
     }
@@ -68,7 +79,7 @@ export class GameObject {
     }
 
     onClick() {
-        this.color = 'yellow';
+        // this.color = 'yellow';
     }
 
     moveTo(x, y) {

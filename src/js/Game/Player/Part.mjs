@@ -91,6 +91,25 @@ export class Part {
 
     render(graphicEngine) {
         graphicEngine.drawSquare(this.x, this.y, this.width, this.height, this.color);
+
+        this.renderLineToPlayer(graphicEngine);
+    }
+
+    renderLineToPlayer(graphicEngine) {
+        const playerX = (this.player.width / 2) - this.player.width / 2;
+        const playerY = (this.player.height / 2) - this.player.height / 2;
+        const objectX = this.x + (this.width / 2);
+        const objectY = this.y + (this.height / 2);
+
+        // Set line style and color
+        graphicEngine.ctx.strokeStyle = this.player.color;
+        graphicEngine.ctx.lineWidth = 1;
+
+        // Draw the line
+        graphicEngine.ctx.beginPath();
+        graphicEngine.ctx.moveTo(objectX, objectY);   // Start at the object
+        graphicEngine.ctx.lineTo(playerX, playerY);   // Draw towards the player
+        graphicEngine.ctx.stroke();                   // Render the line
     }
 
     getVertices() {
@@ -121,6 +140,12 @@ export class Part {
             y: this.player.y + player.height / 2 + (this.x + this.width) * sin + (this.y) * cos
         };
 
+        const simple = {
+            x: this.player.x + player.width / 2 + (this.x + this.width / 2) * cos - (this.y + this.height / 2) * sin,
+            y: this.player.y + player.height / 2 + (this.x + this.width / 2) * sin + (this.y + this.height / 2) * cos
+        }
+
+        return [simple];
         return [topLeft, topRight, bottomRight, bottomLeft];
     }
 }

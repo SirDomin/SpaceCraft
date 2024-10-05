@@ -90,8 +90,8 @@ export class GameEngine {
 
         this.player.setCamera(this.viewportWidth, this.viewportHeight);
 
-        this.generateRandomGameObjects(100, 100, 100);
-        // this.generateStructuredGameObjects(50000, 10, 10);
+        // this.generateRandomGameObjects(100, 100, 100);
+        this.generateStructuredGameObjects(50000, 10, 10);
 
         this.uiManager.generateUI();
     }
