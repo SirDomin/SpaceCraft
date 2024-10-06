@@ -8,4 +8,6 @@ export class EventType {
     static PLAYER_ROTATE = 'playerrotate';
     static RENDER_MINIMAP = 'renderminimap';
     static ACTIVATE_SLOT = 'activateslot';
+    static OBJECT_CREATED = 'objectcreated';
+    static REMOVE_OBJECT = 'removeobject';
 }

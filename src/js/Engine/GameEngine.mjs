@@ -29,6 +29,14 @@ export class GameEngine {
         eventHandler.addEventHandler(EventType.PLAYER_ROTATE, (data) => {
             this.updateCamera(data.rotation);
         }, 'player.rotation', false, 10)
+
+        eventHandler.addEventHandler(EventType.OBJECT_CREATED, object => {
+            this.addGameObject(object);
+        });
+
+        eventHandler.addEventHandler(EventType.REMOVE_OBJECT, object => {
+            this.removeObject(object.id)
+        });
     }
 
     generateRandomGameObjects(numObjects, objectWidth, objectHeight) {
@@ -90,8 +98,8 @@ export class GameEngine {
 
         this.player.setCamera(this.viewportWidth, this.viewportHeight);
 
-        // this.generateRandomGameObjects(100, 100, 100);
-        this.generateStructuredGameObjects(50000, 10, 10);
+        this.generateRandomGameObjects(100, 100, 100);
+        // this.generateStructuredGameObjects(50000, 10, 10);
 
         this.uiManager.generateUI();
     }
@@ -285,6 +293,23 @@ export class GameEngine {
                 object.y < viewportBottom
             );
         });
+    }
+
+    isObjectVisible(object) {
+        const cameraOffsetX = this.getCameraPosition().x;
+        const cameraOffsetY = this.getCameraPosition().y;
+
+        const objectRight = object.x + object.width;
+        const objectBottom = object.y + object.height;
+        const viewportRight = cameraOffsetX + this.viewportWidth;
+        const viewportBottom = cameraOffsetY + this.viewportHeight;
+
+        return (
+            objectRight > cameraOffsetX &&
+            object.x - object.width * 1.5 < viewportRight &&
+            objectBottom > cameraOffsetY &&
+            object.y - object.height < viewportBottom
+        );
     }
 
     getVisibleGameObjects() {

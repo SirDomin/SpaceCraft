@@ -1,5 +1,6 @@
 import {EventType} from "../../Event/EventType.mjs";
 import {ParticleSystem} from "./ParticleSystem.mjs";
+import {Galaxy} from "./Galaxy.mjs";
 
 export class MapManager {
     x;
@@ -9,8 +10,8 @@ export class MapManager {
 
     constructor(map) {
         this.map = {
-            width: 1000,
-            height: 1000,
+            width: 100000,
+            height: 100000,
         };
         this.minimapSize = 200;
         this.scale = this.minimapSize / this.map.width;
@@ -19,10 +20,16 @@ export class MapManager {
         this.color = 'black';
 
         this.particleSystem = new ParticleSystem(this.map.width, this.map);
+        this.mapObjects = [];
 
         eventHandler.addEventHandler(EventType.RENDER_MINIMAP, e => {
             this.renderMinimap(e.graphicEngine, e.objects, e.player)
         }, 'minimap.render', false, 10);
+
+
+        const coordinates = this.getRandomCoordinatesOnMap(2000)
+        const galaxy = new Galaxy(50000, 50000).setGalaxyRadius(400).setNumStars(200);
+        this.mapObjects.push(galaxy)
 
         return this;
     }
@@ -46,16 +53,31 @@ export class MapManager {
         return this;
     }
 
+    getRandomCoordinatesOnMap(margin) {
+        const x = Math.random() * (this.map.width - 2 * margin) + margin;
+        const y = Math.random() * (this.map.height - 2 * margin) + margin;
+
+        return { x: Math.floor(x), y: Math.floor(y) };
+    }
+
     updateAndRender(graphicEngine, gameEngine) {
         this.emitBackground(graphicEngine);
 
         this.particleSystem.updateAndRender(graphicEngine, gameEngine);
+
+        this.mapObjects.forEach(object => {
+            object.update();
+
+            if (gameEngine.isObjectVisible(object)) {
+                object.render(graphicEngine);
+            }
+        })
     }
 
     getBackgroundGradient(graphicEngine, x, y, width, height) {
         const gradient = graphicEngine.ctx.createRadialGradient(
-            x + width / 2, y + height / 2, 0, // Inner circle (center, start radius)
-            x + width / 2, y + height / 2, width / 2 // Outer circle (center, end radius)
+            x + width / 2, y + height / 2, 0,
+            x + width / 2, y + height / 2, width / 2
         );
 
         const colors = [

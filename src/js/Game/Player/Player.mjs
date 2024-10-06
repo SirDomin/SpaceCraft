@@ -5,6 +5,7 @@ import {Bar} from "../Interface/Element/Bar.mjs";
 import {WeaponSlot} from "../Interface/Element/WeaponSlot.mjs";
 import {InterfaceType} from "../Interface/InterfaceType.mjs";
 import {Resource} from "./Resource.mjs";
+import {Projectile} from "./Projectile.mjs";
 
 export class Player extends GameObject {
 
@@ -68,6 +69,10 @@ export class Player extends GameObject {
             this.rotate(this.rotationSpeed)
         })
 
+        eventHandler.addKeyHandler(32, () => {
+            this.shot();
+        });
+
         eventHandler.addKeyHandler(38, () => {
             this.moveForward()
         });
@@ -85,6 +90,21 @@ export class Player extends GameObject {
         });
 
         eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
+    }
+
+    shot() {
+        const halfWidth = this.width / 2;
+        const halfHeight = this.height / 2;
+        let cos = Math.cos(this.rotation - Math.PI / 2);
+        let sin = Math.sin(this.rotation - Math.PI / 2);
+
+        const pos = {
+            x: this.x + halfWidth + ( cos - halfHeight * sin),
+            y: this.y + halfHeight + ( sin + halfHeight * cos)
+        }
+        const projectile = new Projectile(pos.x , pos.y, this.rotation);
+
+        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, projectile);
     }
 
     getDistanceTo(object) {
