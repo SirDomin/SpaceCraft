@@ -3,4 +3,5 @@ export class EntityTypes {
     static PLAYER = 'PLAYER';
     static INTERFACE_OBJECT = 'INTERFACE_OBJECT';
     static PROJECTILE = 'PROJECTILE';
+    static ENEMY = 'ENEMY';
 }

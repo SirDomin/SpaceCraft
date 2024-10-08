@@ -4,13 +4,14 @@ import {EventType} from "../../Event/EventType.mjs";
 import {EntityTypes} from "../Object/EntityTypes.mjs";
 
 export class Projectile extends GameObject {
-    constructor(x, y, direction) {
+    constructor(x, y, speedX, speedY) {
         super(x, y,5 , 5);
 
-        this.direction = direction;
         this.x = x;
         this.y = y;
-        this.speed = 20;
+        this.speedX = speedX;
+        this.speedY = speedY;
+        this.speed = 5;
         this.color = 'red';
         this.type = EntityTypes.PROJECTILE;
 
@@ -27,8 +28,8 @@ export class Projectile extends GameObject {
             eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, this);
             return;
         }
-        this.x += Math.cos(this.direction) * this.speed;
-        this.y += Math.sin(this.direction) * this.speed;
+        this.x += this.speedX * this.speed;
+        this.y += this.speedY * this.speed;
     }
 
     render(graphicEngine) {

@@ -101,15 +101,13 @@ export class Part {
         const objectX = this.x + (this.width / 2);
         const objectY = this.y + (this.height / 2);
 
-        // Set line style and color
         graphicEngine.ctx.strokeStyle = this.player.color;
         graphicEngine.ctx.lineWidth = 1;
 
-        // Draw the line
         graphicEngine.ctx.beginPath();
-        graphicEngine.ctx.moveTo(objectX, objectY);   // Start at the object
-        graphicEngine.ctx.lineTo(playerX, playerY);   // Draw towards the player
-        graphicEngine.ctx.stroke();                   // Render the line
+        graphicEngine.ctx.moveTo(objectX, objectY);
+        graphicEngine.ctx.lineTo(playerX, playerY);
+        graphicEngine.ctx.stroke();
     }
 
     getVertices() {

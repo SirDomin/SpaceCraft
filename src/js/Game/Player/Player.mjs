@@ -99,10 +99,10 @@ export class Player extends GameObject {
         let sin = Math.sin(this.rotation - Math.PI / 2);
 
         const pos = {
-            x: this.x + halfWidth + ( cos - halfHeight * sin),
-            y: this.y + halfHeight + ( sin + halfHeight * cos)
+            x: this.x + halfWidth + (cos - halfHeight * 1.1 * sin),
+            y: this.y + halfHeight + (sin + halfHeight * 1.1 * cos)
         }
-        const projectile = new Projectile(pos.x , pos.y, this.rotation);
+        const projectile = new Projectile(pos.x , pos.y, Math.cos(this.rotation), Math.sin(this.rotation));
 
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, projectile);
     }
