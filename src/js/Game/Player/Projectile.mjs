@@ -4,7 +4,7 @@ import {EventType} from "../../Event/EventType.mjs";
 import {EntityTypes} from "../Object/EntityTypes.mjs";
 
 export class Projectile extends GameObject {
-    constructor(x, y, speedX, speedY) {
+    constructor(x, y, speedX, speedY, type) {
         super(x, y,5 , 5);
 
         this.x = x;
@@ -13,9 +13,9 @@ export class Projectile extends GameObject {
         this.speedY = speedY;
         this.speed = 5;
         this.color = 'red';
-        this.type = EntityTypes.PROJECTILE;
+        this.type = type;
 
-        this.lifespan = 500;
+        this.lifespan = 2000;
         this.creationTime = Date.now();
     }
 
@@ -30,6 +30,14 @@ export class Projectile extends GameObject {
         }
         this.x += this.speedX * this.speed;
         this.y += this.speedY * this.speed;
+    }
+
+    onCollision(object) {
+        if (object.type === EntityTypes.ENEMY) {
+            object.onCollision(this);
+        }
+
+        eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, this);
     }
 
     render(graphicEngine) {

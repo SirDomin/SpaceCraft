@@ -10,8 +10,8 @@ export class MapManager {
 
     constructor(map) {
         this.map = {
-            width: 100000,
-            height: 100000,
+            width: 5000,
+            height: 5000,
         };
         this.minimapSize = 200;
         this.scale = this.minimapSize / this.map.width;
@@ -28,7 +28,7 @@ export class MapManager {
 
 
         const coordinates = this.getRandomCoordinatesOnMap(2000)
-        const galaxy = new Galaxy(50000, 50000).setGalaxyRadius(400).setNumStars(200);
+        const galaxy = new Galaxy(coordinates.x, coordinates.y).setGalaxyRadius(400).setNumStars(200);
         this.mapObjects.push(galaxy)
 
         return this;

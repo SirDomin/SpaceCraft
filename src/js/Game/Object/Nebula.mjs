@@ -42,6 +42,6 @@ export class Nebula extends GameObject{
     }
 
     renderOnMinimap(minimap, graphicEngine) {
-        graphicEngine.drawSquare(this.x * minimap.scale + minimap.x, this.y * minimap.scale + minimap.y, this.width * minimap.scale, this.height * minimap.scale, 'cyan');
+        // graphicEngine.drawSquare(this.x * minimap.scale + minimap.x, this.y * minimap.scale + minimap.y, this.width * minimap.scale, this.height * minimap.scale, 'cyan');
     }
 }

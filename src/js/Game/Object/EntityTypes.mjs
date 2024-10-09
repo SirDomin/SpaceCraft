@@ -3,5 +3,7 @@ export class EntityTypes {
     static PLAYER = 'PLAYER';
     static INTERFACE_OBJECT = 'INTERFACE_OBJECT';
     static PROJECTILE = 'PROJECTILE';
+    static PROJECTILE_PLAYER = 'PROJECTILE_PLAYER';
+    static PROJECTILE_ENEMY = 'PROJECTILE_ENEMY';
     static ENEMY = 'ENEMY';
 }

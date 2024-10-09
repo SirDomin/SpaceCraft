@@ -77,6 +77,7 @@ export class GameEngine {
     getCameraPosition() {
         const cameraX = Math.max(0, Math.min(this.player.x + this.player.width / 2 - this.viewportWidth / 2, this.mapManager.map.width - this.viewportWidth));
         const cameraY = Math.max(0, Math.min(this.player.y + this.player.height / 2 - this.viewportHeight / 2, this.mapManager.map.height - this.viewportHeight));
+
         return { x: cameraX, y: cameraY - this.offsetY };
     }
 
@@ -157,6 +158,8 @@ export class GameEngine {
 
         const cameraPos = this.getCameraPosition();
 
+        window.cameraPos = cameraPos;
+
         this.graphicEngine.translate(-cameraPos.x, -cameraPos.y);
 
         this.mapManager.updateAndRender(this.graphicEngine, this);
@@ -224,11 +227,26 @@ export class GameEngine {
             })
         ;
 
-        const visibleObjects = this.getVisibleAndClosestObjects(this.player);
+        this.gameObjects.forEach((gameObject, index) => {
+            if (gameObject.collisionObjects && gameObject.collisionObjects.length > 0) {
+                this.gameObjects.forEach((otherObject, otherIndex) => {
+                    if (index !== otherIndex) {
+                        if (gameObject.collisionObjects.includes(otherObject.type)) {
+                            if (gameObject.checkCollision(otherObject)) {
+                                gameObject.onCollision(otherObject);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        const visibleObjects = this.getVisibleGameObjects();
 
         for (const obj of visibleObjects) {
             if (this.player.checkCollision(obj)) {
-                this.removeObject(obj.id)
+                this.player.onCollision(obj);
+                obj.onCollision(this.player);
             }
         }
 
@@ -239,6 +257,7 @@ export class GameEngine {
         this.render();
         this.player.update();
         eventHandler.dispatchEvent(EventType.GAME_TICK, {gameObjects: this.gameObjects});
+        eventHandler.dispatchEvent(EventType.VISIBLE_OBJECTS_TICK, {gameObjects: visibleObjects});
 
         this.renderMinimap();
 

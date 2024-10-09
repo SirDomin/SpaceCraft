@@ -6,6 +6,7 @@ import {WeaponSlot} from "../Interface/Element/WeaponSlot.mjs";
 import {InterfaceType} from "../Interface/InterfaceType.mjs";
 import {Resource} from "./Resource.mjs";
 import {Projectile} from "./Projectile.mjs";
+import {EntityTypes} from "../Object/EntityTypes.mjs";
 
 export class Player extends GameObject {
 
@@ -15,13 +16,13 @@ export class Player extends GameObject {
         this.rotation = -Math.PI / 2;
         this.clicked = false;
         this.rotationSpeed = 2.5;
-        this.speed = 10;
+        this.speed = 6;
 
 
         this.maxPartDistance = 100;
-        this.width = 20;
         this.parts = [
-            // Part.fromJSON(this, loader.getResource('parts', 'Engine 1')),
+            Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade')),
+            Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 2')),
             // Part.fromJSON(this, loader.getResource('parts', 'Engine 2')),
             // Part.fromJSON(this, loader.getResource('parts', 'Fuel Tank')),
             // new Part(this, 30, -100, 10, 10),
@@ -31,17 +32,18 @@ export class Player extends GameObject {
         ];
 
 
-        console.log(this.parts);
-
         this.resources = {
-            energy: new Resource(Resource.ENERGY, 100, 50),
-            fuel: new Resource(Resource.FUEL, 100, 50),
+            shield: new Resource(Resource.ENERGY, 100, 50),
             health: new Resource(Resource.HEALTH, 100, 33)
         }
 
         this.currentPart = null;
 
         this.weaponSlots = [];
+
+        this.collisionObjects = [
+            EntityTypes.ENEMY
+        ]
 
         this.mapBorders = {
             width: 0,
@@ -52,6 +54,8 @@ export class Player extends GameObject {
             width: 0,
             height: 0
         }
+
+        this.cameraPos = null;
 
         this.experience = 0;
 
@@ -102,13 +106,16 @@ export class Player extends GameObject {
             x: this.x + halfWidth + (cos - halfHeight * 1.1 * sin),
             y: this.y + halfHeight + (sin + halfHeight * 1.1 * cos)
         }
-        const projectile = new Projectile(pos.x , pos.y, Math.cos(this.rotation), Math.sin(this.rotation));
+        const projectile = new Projectile(pos.x , pos.y, Math.cos(this.rotation), Math.sin(this.rotation), EntityTypes.PROJECTILE_PLAYER);
+
+        projectile.collisionObjects = [
+            EntityTypes.ENEMY
+        ]
 
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, projectile);
     }
 
     getDistanceTo(object) {
-
         const offset = this.camera.width / 2 > this.mapBorders.width / 2 ? this.mapBorders.width / 2 : this.camera.width / 2;
 
         const middleX1 = this.x + (this.width / 2);
@@ -179,10 +186,8 @@ export class Player extends GameObject {
         const width = x - startX + boxWidth;
 
         y -= 20;
-        this.energyBar = new Bar(startX, y, width, 10, '#00CCFF');
-        this.fuelBar = new Bar(startX, y - 14, width, 10, '#FFCC00');
-        this.healthBar = new Bar(startX, y - 28, width, 10, '#FF4C4C');
-
+        this.healthBar = new Bar(startX, y, width, 10, '#FF4C4C');
+        this.shieldBar = new Bar(startX, y - 14, width, 10, '#FFFFFF');
     }
 
     dispatchRotation() {
@@ -256,10 +261,15 @@ export class Player extends GameObject {
         this.drawShip(graphicEngine);
 
         this.parts.forEach(part => {
-            part.render(graphicEngine)
+            part.render(graphicEngine);
         });
 
         graphicEngine.restore()
+
+        this.parts.forEach(part => {
+            part.renderAfterTransform(graphicEngine);
+        });
+
     }
 
     renderUi(graphicEngine) {
@@ -268,8 +278,7 @@ export class Player extends GameObject {
         });
 
         this.healthBar.render(graphicEngine);
-        this.energyBar.render(graphicEngine);
-        this.fuelBar.render(graphicEngine);
+        this.shieldBar.render(graphicEngine);
     }
 
     drawShip(graphicEngine) {
@@ -284,8 +293,7 @@ export class Player extends GameObject {
         })
 
         this.healthBar.update(this.resources.health.amount(), this.resources.health.max(), 0);
-        this.fuelBar.update(this.resources.fuel.amount(), this.resources.fuel.max(), 0);
-        this.energyBar.update(this.resources.energy.amount(), this.resources.energy.max(), 0);
+        this.shieldBar.update(this.resources.shield.amount(), this.resources.shield.max(), 0);
     }
 
     moveBackward() {
@@ -397,16 +405,30 @@ export class Player extends GameObject {
     }
 
     checkCollision(obj) {
+        if (!obj.collisionObjects.includes(this.type) && !this.collisionObjects.includes(obj.type)) {
+            return false;
+        }
+
         const thisVertices = this.getVertices();
         const otherVertices = obj.getVertices();
 
+        return this.checkSAT(thisVertices, otherVertices);
+    }
+
+    onCollision(object) {
+
+        this.resources.health.removeAmount(object.damage);
+        // eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, object)
+    }
+
+    checkPartVertices(otherVertices) {
         for (let x = 0; x < this.parts.length; x++) {
             if (this.checkSAT(this.parts[x].getVertices(), otherVertices) === true) {
                 return true;
             }
         }
 
-        return this.checkSAT(thisVertices, otherVertices);
+        return false;
     }
 
     getVertices(parts = false) {

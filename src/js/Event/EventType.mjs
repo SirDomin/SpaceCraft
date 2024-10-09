@@ -10,4 +10,6 @@ export class EventType {
     static ACTIVATE_SLOT = 'activateslot';
     static OBJECT_CREATED = 'objectcreated';
     static REMOVE_OBJECT = 'removeobject';
+    static VISIBLE_OBJECTS_TICK = 'visibleobjectstick';
+    static ENEMY_DESTROYED = 'enemydestroyed';
 }

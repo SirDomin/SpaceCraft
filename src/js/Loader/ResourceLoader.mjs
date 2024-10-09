@@ -1,5 +1,5 @@
 export class ResourceLoader {
-    constructor(basePath = './src/json') {
+    constructor(basePath = './src/resources/json') {
         this.basePath = basePath;
         this.resources = {};
     }

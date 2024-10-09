@@ -34,6 +34,9 @@ export class GameObject {
         this.serverTick = false;
         this.renderPriority = 1;
         this.rotation = 0;
+        this.collisionObjects = [];
+        this.damage = 0;
+        this.collisionPriority = 0;
     }
 
     update() {
@@ -102,6 +105,9 @@ export class GameObject {
             { x: this.x + halfWidth +(halfWidth * cos - halfHeight * sin), y: this.y + halfHeight + (halfWidth * sin + halfHeight * cos) },
             { x: this.x + halfWidth +(-halfWidth * cos - halfHeight * sin), y: this.y  + halfHeight+ (-halfWidth * sin + halfHeight * cos) },
         ];
+    }
+
+    onCollision(object) {
     }
 
     checkCollision(object) {

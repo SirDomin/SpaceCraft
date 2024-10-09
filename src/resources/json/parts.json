@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Shield Upgrade",
+    "x": -10,
+    "y": -10,
+    "width": 10,
+    "height": 10,
+    "color": "blue",
+    "resourceUsage": {
+      "type": "SHIELD",
+      "cost": 1,
+      "usage": "second",
+      "interval": 1
+    }
+  },
+  {
+    "name": "Shield Upgrade 2",
+    "x": 10,
+    "y": -10,
+    "width": 10,
+    "height": 10,
+    "color": "blue",
+    "resourceUsage": {
+      "type": "SHIELD",
+      "cost": 1,
+      "usage": "second",
+      "interval": 1
+    }
+  }
+]

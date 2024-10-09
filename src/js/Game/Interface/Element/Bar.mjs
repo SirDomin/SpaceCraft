@@ -7,6 +7,8 @@ export class Bar {
 
         this.color = color;
 
+        this.displayValue = true
+
         this.currentValue = 0;
         this.maxValue = 0;
         this.gain = 0;
@@ -14,8 +16,16 @@ export class Bar {
         return this;
     }
 
+    showValue(value) {
+        this.displayValue = value;
+
+        return this;
+    }
+
     setColor(color) {
         this.color = color;
+
+        return this;
     }
 
     update(currentValue, maxValue, gain) {
@@ -37,11 +47,13 @@ export class Bar {
         graphicEngine.ctx.lineWidth = 1;
         graphicEngine.ctx.strokeRect(this.x, this.y, this.width, this.height);
 
-        graphicEngine.ctx.fillStyle = 'black';
-        graphicEngine.ctx.font = '10px Arial';
-        graphicEngine.ctx.textAlign = 'center';
-        graphicEngine.ctx.fillText(`${this.currentValue} / ${this.maxValue} (${this.gain >= 0 ? "+" : "-"}${this.gain}/s)`, this.x + this.width / 2, this.y + this.height / 2 + 3.5);
-        graphicEngine.ctx.textAlign = 'left';
+        if (this.displayValue === true) {
+            graphicEngine.ctx.fillStyle = 'black';
+            graphicEngine.ctx.font = '10px Arial';
+            graphicEngine.ctx.textAlign = 'center';
+            graphicEngine.ctx.fillText(`${this.currentValue} / ${this.maxValue} (${this.gain >= 0 ? "+" : "-"}${this.gain}/s)`, this.x + this.width / 2, this.y + this.height / 2 + 3.5);
+            graphicEngine.ctx.textAlign = 'left';
+        }
     }
 
     darkenColor(color, factor) {
