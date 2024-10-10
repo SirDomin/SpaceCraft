@@ -31,7 +31,9 @@ export class Part {
 
         this.x = this.baseX - this.relativeX;
         this.y = this.baseY - this.relativeY;
-        this.range = 400;
+        this.range = 300;
+
+        this.projectileDamage = 50;
 
         this.resourceUsage = {
             type: Resource[resourceUsage.type] || Resource.HEALTH,
@@ -41,18 +43,16 @@ export class Part {
             currentInterval: 0,
         };
 
+        this.shotSound = loader.getAudio('laser')
+
         this.globalCoords = {
             x: x,
             y: y,
         };
 
-        this.projectiles = [
+        this.accuracy = 99;
 
-        ];
-
-        this.accuracy = 97;
-
-        this.shotInterval = 1000;
+        this.shotInterval = 500;
         this.lastShotTime = 0;
 
         this.lastRotation = 0;
@@ -111,6 +111,9 @@ export class Part {
             return;
         }
 
+        const audio = new Audio(this.shotSound.src);
+        audio.play();
+
         const projectileWidth = 5;
         const projectileHeight = 5;
 
@@ -150,11 +153,12 @@ export class Part {
 
         const projectile = new Projectile(pos.x, pos.y, normalizedDirectionX, normalizedDirectionY, EntityTypes.PROJECTILE_PLAYER);
 
+
         projectile.collisionObjects = [
             EntityTypes.ENEMY
         ];
 
-        projectile.damage = 5;
+        projectile.damage = this.projectileDamage;
 
         // Dispatch projectile creation event
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, projectile);
@@ -246,7 +250,6 @@ export class Part {
         });
 
         this.target = closestObject;
-
     }
 
     renderLineToPlayer(graphicEngine) {
@@ -268,6 +271,10 @@ export class Part {
         if (!this.target) {
             return;
         }
+
+        this.target.renderTarget(graphicEngine);
+
+        return;
 
         const targetX = this.target.x + (this.target.width / 2);
         const targetY = this.target.y + (this.target.height / 2);

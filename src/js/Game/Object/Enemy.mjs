@@ -3,6 +3,7 @@ import {EntityTypes} from "./EntityTypes.mjs";
 import {Resource} from "../Player/Resource.mjs";
 import {Bar} from "../Interface/Element/Bar.mjs";
 import {EventType} from "../../Event/EventType.mjs";
+import {EnemyDestruction} from "./EnemyDestruction.mjs";
 
 export class Enemy extends GameObject {
     constructor(x, y, w, h) {
@@ -15,11 +16,16 @@ export class Enemy extends GameObject {
         this.damage = 5;
         this.resistance = 5;
 
+        this.targetImage = loader.getMediaFile('targetmark');
+        this.isTarget = false;
+
+        this.image = loader.getMediaFile('enemy1');
+
         this.resources = {
             health: new Resource(Resource.HEALTH, 500, 500),
         }
 
-        this.healthBar = new Bar(this.x, this.y + this.height * 1.1, this.width, 5, '#FF4C4C').showValue(false);
+        this.healthBar = new Bar(this.x, this.y + this.height * 1.1, this.width, 5, '#FF4C4C').showValue(false).setBackgroundColor('black');
     }
 
     setTarget(target) {
@@ -55,6 +61,8 @@ export class Enemy extends GameObject {
         if (this.resources.health.amount() <= 0) {
             eventHandler.dispatchEvent(EventType.ENEMY_DESTROYED, this);
 
+            EnemyDestruction.fromEnemy(this);
+
             eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, this);
         }
     }
@@ -62,13 +70,34 @@ export class Enemy extends GameObject {
     onCollision(object) {
         if (object.type === EntityTypes.PROJECTILE_PLAYER) {
             this.resources.health.removeAmount(object.damage);
+
+            let directionX = object.speedX;
+            let directionY = object.speedY;
+
+            let magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+
+            if (magnitude > 0) {
+                directionX /= magnitude;
+                directionY /= magnitude;
+
+                this.x += directionX * object.force;
+                this.y += directionY * object.force;
+            }
         }
     }
 
     render(graphicEngine) {
-        graphicEngine.drawSquare(this.x, this.y, this.width, this.height, this.color);
+        graphicEngine.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
 
         this.healthBar.render(graphicEngine);
+    }
+
+    renderTarget(graphicEngine) {
+        graphicEngine.ctx.globalAlpha = 0.7;
+
+        graphicEngine.ctx.drawImage(this.targetImage, this.x, this.y, this.width, this.height);
+
+        graphicEngine.ctx.globalAlpha = 1.0;
     }
 
     attackTarget() {

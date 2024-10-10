@@ -5,12 +5,17 @@ import {EventHandler} from "./Event/EventHandler.mjs";
 import {EventType} from "./Event/EventType.mjs";
 import {ResourceLoader} from "./Loader/ResourceLoader.mjs";
 import {Enemy} from "./Game/Object/Enemy.mjs";
+import {Hitmark} from "./Game/Object/Hitmark.mjs";
+import {ModifiedAudio} from "./Game/Audio/ModifiedAudio.mjs";
+import {Utils} from "./Utils/Utils.mjs";
 
 window.gameScale = 1.3;
 window.eventHandler = new EventHandler();
 window.debug = false;
 window.renderCollisions = true;
 window.cameraPos = {};
+
+let userInteracted = false;
 
 const graphicEngine = new GraphicEngine(document.body);
 
@@ -30,9 +35,27 @@ window.loader.loadAllResources().then(() => {
     }, 'game-tick').debug = false
 
     eventHandler.addMouseHandler('mousedown', (mouse) => {
-        player.handleMouseDown(mouse);
+        // player.handleMouseDown(mouse);
         return gameEngine.handleMouseDown(mouse);
     }, 'engine-keydown', true).setPriority(0);
+
+    const hm = loader.getMediaFile('hitmark');
+
+    const hitSounds = [
+        loader.getAudio('hit'),
+        loader.getAudio('hit1'),
+        loader.getAudio('hit2'),
+        loader.getAudio('hit3'),
+    ]
+
+    eventHandler.addEventHandler(EventType.PROJECTILE_HIT, e => {
+
+        // const audio = new Audio(Utils.getRandomElement(hitSounds).src);
+        // audio.volume = Utils.random(20, 40) / 100
+        // audio.play();
+        const hitmark = new Hitmark(e.x, e.y, 20, 20, 10, 4, 100);
+        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, hitmark);
+    })
 
     generateEnemiesInCircle(player, 50, 400);
 });

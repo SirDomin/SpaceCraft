@@ -24,4 +24,13 @@ export class Utils {
             return Utils.random(0,9);
         })
     }
+
+    static getRandomElement(array) {
+        if (array.length === 0) {
+            return null;
+        }
+        
+        const randomIndex = Math.floor(Math.random() * array.length);
+        return array[randomIndex];
+    }
 }

@@ -19,8 +19,9 @@ export class Resource {
     }
 
     removeAmount(amount) {
-        if (this.currentAmount - amount <= this.maxAmount && this.currentAmount - amount >= 0 ) {
-            this.currentAmount -= amount;
+        this.currentAmount -= amount;
+        if (this.currentAmount < 0) {
+            this.currentAmount = 0;
         }
     }
 

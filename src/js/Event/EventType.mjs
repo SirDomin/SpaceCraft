@@ -12,4 +12,5 @@ export class EventType {
     static REMOVE_OBJECT = 'removeobject';
     static VISIBLE_OBJECTS_TICK = 'visibleobjectstick';
     static ENEMY_DESTROYED = 'enemydestroyed';
+    static PROJECTILE_HIT = 'projectilehit';
 }

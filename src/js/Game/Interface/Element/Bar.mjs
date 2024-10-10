@@ -12,12 +12,19 @@ export class Bar {
         this.currentValue = 0;
         this.maxValue = 0;
         this.gain = 0;
+        this.backgroundColor = null;
 
         return this;
     }
 
     showValue(value) {
         this.displayValue = value;
+
+        return this;
+    }
+
+    setBackgroundColor(value) {
+        this.backgroundColor = value;
 
         return this;
     }
@@ -37,7 +44,8 @@ export class Bar {
     render(graphicEngine) {
         const percentage = this.currentValue / this.maxValue;
 
-        graphicEngine.ctx.fillStyle = this.darkenColor(this.color, 0.3);
+        graphicEngine.ctx.fillStyle = this.backgroundColor ?? this.darkenColor(this.color, 0.3);
+
         graphicEngine.ctx.fillRect(this.x, this.y, this.width, this.height);
 
         graphicEngine.ctx.fillStyle = this.color;

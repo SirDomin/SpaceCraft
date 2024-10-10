@@ -18,11 +18,12 @@ export class Player extends GameObject {
         this.rotationSpeed = 2.5;
         this.speed = 6;
 
-
         this.maxPartDistance = 100;
         this.parts = [
             Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade')),
             Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 2')),
+            Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 3')),
+            Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 4')),
             // Part.fromJSON(this, loader.getResource('parts', 'Engine 2')),
             // Part.fromJSON(this, loader.getResource('parts', 'Fuel Tank')),
             // new Part(this, 30, -100, 10, 10),
@@ -97,22 +98,24 @@ export class Player extends GameObject {
     }
 
     shot() {
-        const halfWidth = this.width / 2;
-        const halfHeight = this.height / 2;
-        let cos = Math.cos(this.rotation - Math.PI / 2);
-        let sin = Math.sin(this.rotation - Math.PI / 2);
+        // const halfWidth = this.width / 2;
+        // const halfHeight = this.height / 2;
+        // let cos = Math.cos(this.rotation - Math.PI / 2);
+        // let sin = Math.sin(this.rotation - Math.PI / 2);
+        //
+        // const pos = {
+        //     x: this.x + halfWidth + (cos - halfHeight * 1.1 * sin),
+        //     y: this.y + halfHeight + (sin + halfHeight * 1.1 * cos)
+        // }
+        // const projectile = new Projectile(pos.x , pos.y, Math.cos(this.rotation), Math.sin(this.rotation), EntityTypes.PROJECTILE_PLAYER);
+        //
+        // projectile.collisionObjects = [
+        //     EntityTypes.ENEMY
+        // ]
+        //
+        // projectile.damage = 200;
 
-        const pos = {
-            x: this.x + halfWidth + (cos - halfHeight * 1.1 * sin),
-            y: this.y + halfHeight + (sin + halfHeight * 1.1 * cos)
-        }
-        const projectile = new Projectile(pos.x , pos.y, Math.cos(this.rotation), Math.sin(this.rotation), EntityTypes.PROJECTILE_PLAYER);
-
-        projectile.collisionObjects = [
-            EntityTypes.ENEMY
-        ]
-
-        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, projectile);
+        // eventHandler.dispatchEvent(EventType.OBJECT_CREATED, projectile);
     }
 
     getDistanceTo(object) {
@@ -405,7 +408,7 @@ export class Player extends GameObject {
     }
 
     checkCollision(obj) {
-        if (!obj.collisionObjects.includes(this.type) && !this.collisionObjects.includes(obj.type)) {
+        if (!obj.collisionObjects || !obj.collisionObjects.includes(this.type) && !this.collisionObjects.includes(obj.type)) {
             return false;
         }
 
