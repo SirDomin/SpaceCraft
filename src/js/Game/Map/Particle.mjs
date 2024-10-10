@@ -13,9 +13,9 @@ export class Particle {
         this.mapHeight = mapHeight;
     }
 
-    update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
+    update(deltaTime) {
+        this.x += this.speedX * deltaTime;
+        this.y += this.speedY * deltaTime;
 
         if (this.x < 0 || this.x > this.mapWidth) this.x = (this.x + this.mapWidth) % this.mapWidth;
         if (this.y < 0 || this.y > this.mapHeight) this.y = (this.y + this.mapHeight) % this.mapHeight;

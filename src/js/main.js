@@ -24,14 +24,14 @@ window.gameEngine = new GameEngine(graphicEngine);
 window.loader = new ResourceLoader();
 
 window.loader.loadAllResources().then(() => {
-    const player = new Player(5, 10, 20, 20);
+    const player = new Player(5, 10, 50, 50);
 
     gameEngine.addPlayer(player);
 
     gameEngine.start();
 
     eventHandler.addEventHandler(EventType.GAME_TICK, e => {
-        eventHandler.tick();
+        // eventHandler.tick();
     }, 'game-tick').debug = false
 
     eventHandler.addMouseHandler('mousedown', (mouse) => {
@@ -70,7 +70,7 @@ function generateEnemiesInCircle(player, x, r) {
         const enemyY = player.y + r * Math.sin(angle);
 
         const enemy = new Enemy(enemyX, enemyY, 20, 20);
-        // enemy.setTarget(player)
+        enemy.setTarget(player)
         enemies.push(enemy);
 
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, enemy);

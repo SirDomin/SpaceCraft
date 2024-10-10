@@ -1,5 +1,5 @@
-import {EntityTypes} from "./EntityTypes.mjs";
-import {Utils} from "../../Utils/Utils.mjs";
+import { EntityTypes } from "./EntityTypes.mjs";
+import { Utils } from "../../Utils/Utils.mjs";
 
 export class GameObject {
     x;
@@ -29,7 +29,7 @@ export class GameObject {
         this.collisionChecks = 0;
         this.id = Utils.generateId();
         this.color = 'darkblue';
-        this.speed = (20) * (Math.random() + 0.1);
+        this.speed = 20 * (Math.random() + 0.1); // Speed in units per second
         this.target = null;
         this.serverTick = false;
         this.renderPriority = 1;
@@ -39,30 +39,39 @@ export class GameObject {
         this.collisionPriority = 0;
     }
 
-    update() {
+    /**
+     * Update the game object's state.
+     * @param {number} deltaTime - The time elapsed since the last update (in seconds).
+     */
+    update(deltaTime) {
         if (this.target) {
-            this.x += -(this.speed) * Math.cos(Math.atan2(
-                (this.target.y + this.target.height / 2) - (this.y + this.height / 2),
-                (this.x + this.width / 2) - (this.target.x + this.target.width / 2)
-            ));
-            this.y += (this.speed) * Math.sin(Math.atan2(
-                (this.target.y + this.target.height / 2) - (this.y + this.height / 2),
-                (this.x + this.width / 2) - (this.target.x + this.target.width / 2)
-            ));
-        }
+            const targetCenterX = this.target.x + this.target.width / 2;
+            const targetCenterY = this.target.y + this.target.height / 2;
+            const thisCenterX = this.x + this.width / 2;
+            const thisCenterY = this.y + this.height / 2;
 
+            const deltaX = targetCenterX - thisCenterX;
+            const deltaY = targetCenterY - thisCenterY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            const dirX = deltaX / distance;
+            const dirY = deltaY / distance;
+
+            this.x += dirX * this.speed * deltaTime;
+            this.y += dirY * this.speed * deltaTime;
+        }
     }
 
     onRender(graphicEngine) {
-
+        // Implement any additional rendering logic here
     }
 
     getDistanceTo(object) {
-        const middleX1 = this.x + (this.width / 2);
-        const middleY1 = this.y + (this.height / 2);
+        const middleX1 = this.x + this.width / 2;
+        const middleY1 = this.y + this.height / 2;
 
-        const middleX2 = object.x + (object.width / 2);
-        const middleY2 = object.y + (object.height / 2);
+        const middleX2 = object.x + object.width / 2;
+        const middleY2 = object.y + object.height / 2;
 
         const deltaX = middleX2 - middleX1;
         const deltaY = middleY2 - middleY1;
@@ -74,7 +83,13 @@ export class GameObject {
     }
 
     renderOnMinimap(minimap, graphicEngine) {
-        graphicEngine.drawSquare(this.x * minimap.scale + minimap.x, this.y * minimap.scale + minimap.y, this.width * minimap.scale, this.height * minimap.scale, this.color);
+        graphicEngine.drawSquare(
+            this.x * minimap.scale + minimap.x,
+            this.y * minimap.scale + minimap.y,
+            this.width * minimap.scale,
+            this.height * minimap.scale,
+            this.color
+        );
     }
 
     getMidPoint() {
@@ -82,7 +97,7 @@ export class GameObject {
     }
 
     onClick() {
-        // this.color = 'yellow';
+        // Handle click event
     }
 
     moveTo(x, y) {
@@ -96,18 +111,31 @@ export class GameObject {
     getVertices() {
         const halfWidth = this.width / 2;
         const halfHeight = this.height / 2;
-        const cos = Math.cos(this.rotation -Math.PI /2);
+        const cos = Math.cos(this.rotation - Math.PI / 2);
         const sin = Math.sin(this.rotation - Math.PI / 2);
 
         return [
-            { x: this.x + halfWidth + (-halfWidth * cos - -halfHeight * sin), y: this.y + halfHeight + (-halfWidth * sin + -halfHeight * cos) },
-            { x: this.x + halfWidth + (halfWidth * cos - -halfHeight * sin), y: this.y + halfHeight + (halfWidth * sin + -halfHeight * cos) },
-            { x: this.x + halfWidth +(halfWidth * cos - halfHeight * sin), y: this.y + halfHeight + (halfWidth * sin + halfHeight * cos) },
-            { x: this.x + halfWidth +(-halfWidth * cos - halfHeight * sin), y: this.y  + halfHeight+ (-halfWidth * sin + halfHeight * cos) },
+            {
+                x: this.x + halfWidth + (-halfWidth * cos - -halfHeight * sin),
+                y: this.y + halfHeight + (-halfWidth * sin + -halfHeight * cos),
+            },
+            {
+                x: this.x + halfWidth + (halfWidth * cos - -halfHeight * sin),
+                y: this.y + halfHeight + (halfWidth * sin + -halfHeight * cos),
+            },
+            {
+                x: this.x + halfWidth + (halfWidth * cos - halfHeight * sin),
+                y: this.y + halfHeight + (halfWidth * sin + halfHeight * cos),
+            },
+            {
+                x: this.x + halfWidth + (-halfWidth * cos - halfHeight * sin),
+                y: this.y + halfHeight + (-halfWidth * sin + halfHeight * cos),
+            },
         ];
     }
 
     onCollision(object) {
+        // Handle collision with another object
     }
 
     checkCollision(object) {

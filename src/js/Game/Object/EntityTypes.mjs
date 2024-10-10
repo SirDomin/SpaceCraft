@@ -6,4 +6,5 @@ export class EntityTypes {
     static PROJECTILE_PLAYER = 'PROJECTILE_PLAYER';
     static PROJECTILE_ENEMY = 'PROJECTILE_ENEMY';
     static ENEMY = 'ENEMY';
+    static EXPLOSION = 'EXPLOSION';
 }

@@ -32,27 +32,30 @@ export class EventHandler {
 
     }
 
-    tick() {
-        this.handleKeysDown();
+    tick(deltaTime) {
+        this.handleKeysDown(deltaTime);
         this.handleEvents();
     }
 
-    handleKeysDown = () => {
-        for (let x in this.keyHandlers) {
-            if (this.keysDown[x]) {
-                if(this.keyHandlers[x].single) {
-                    if (this.keyHandlers[x].handled === true) {
-                        continue;
-                    }
-                    this.keyHandlers[x].handled = true;
+    handleKeysDown = (deltaTime) => {
+        for (let keyCode in this.keyHandlers) {
+            if (this.keysDown[keyCode]) {
+                const handler = this.keyHandlers[keyCode];
+
+                if (handler.single && handler.handled) {
+                    continue;
                 }
+
+                handler.handled = true;
+
                 if (debug) {
-                    console.log(`Event %c${this.keyHandlers[x].name}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', {});
+                    console.log(`Event %c${handler.name}%c has been dispatched with deltaTime: ${deltaTime}`, 'color: cyan; font-weight: bold;', 'color: inherit;');
                 }
-                this.keyHandlers[x].callback();
+
+                handler.callback(deltaTime);
             }
         }
-    }
+    };
 
     handleMouseEvents = () => {
         for (let x in this.mouseHandlers) {

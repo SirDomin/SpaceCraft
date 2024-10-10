@@ -111,6 +111,7 @@ export class ResourceLoader {
     async loadJSONFilesFromDirectory() {
         return [
             'parts.json',
+            'weapons.json',
         ];
     }
 
@@ -130,6 +131,7 @@ export class ResourceLoader {
             'hitmark.png',
             'targetmark.png',
             'enemy1.png',
+            'player1.png',
         ];
     }
 }

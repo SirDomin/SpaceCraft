@@ -23,7 +23,7 @@ export class MapManager {
         this.mapObjects = [];
 
         eventHandler.addEventHandler(EventType.RENDER_MINIMAP, e => {
-            this.renderMinimap(e.graphicEngine, e.objects, e.player)
+            // this.renderMinimap(e.graphicEngine, e.objects, e.player)
         }, 'minimap.render', false, 10);
 
 
@@ -60,14 +60,20 @@ export class MapManager {
         return { x: Math.floor(x), y: Math.floor(y) };
     }
 
-    updateAndRender(graphicEngine, gameEngine) {
+    update(deltaTime) {
+        this.particleSystem.update(deltaTime);
+
+        this.mapObjects.forEach(object => {
+            object.update(deltaTime);
+        })
+    }
+
+    render(graphicEngine, gameEngine) {
         this.emitBackground(graphicEngine);
 
         this.particleSystem.updateAndRender(graphicEngine, gameEngine);
 
         this.mapObjects.forEach(object => {
-            object.update();
-
             if (gameEngine.isObjectVisible(object)) {
                 object.render(graphicEngine);
             }

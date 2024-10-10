@@ -7,6 +7,7 @@ import {InterfaceType} from "../Interface/InterfaceType.mjs";
 import {Resource} from "./Resource.mjs";
 import {Projectile} from "./Projectile.mjs";
 import {EntityTypes} from "../Object/EntityTypes.mjs";
+import {Weapon} from "./Weapon.mjs";
 
 export class Player extends GameObject {
 
@@ -15,15 +16,17 @@ export class Player extends GameObject {
 
         this.rotation = -Math.PI / 2;
         this.clicked = false;
-        this.rotationSpeed = 2.5;
-        this.speed = 6;
+        this.rotationSpeed = 100;
+        this.speed = 400;
 
         this.maxPartDistance = 100;
-        this.parts = [
-            Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade')),
-            Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 2')),
-            Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 3')),
-            Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 4')),
+        this.weapons = [
+            Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Spread Shot')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'EMP Blaster')),
+            // Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 3')),
+            // Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 4')),
             // Part.fromJSON(this, loader.getResource('parts', 'Engine 2')),
             // Part.fromJSON(this, loader.getResource('parts', 'Fuel Tank')),
             // new Part(this, 30, -100, 10, 10),
@@ -32,6 +35,7 @@ export class Player extends GameObject {
             // new Part(this,  -30, 30, 10, 10),
         ];
 
+        this.image = loader.getMediaFile('player1');
 
         this.resources = {
             shield: new Resource(Resource.ENERGY, 100, 50),
@@ -66,25 +70,7 @@ export class Player extends GameObject {
             this.render(eventData.graphicEngine)
         }, 'player.render', false, 10).debug = false;
 
-        eventHandler.addKeyHandler(37, () => {
-            this.rotate(-this.rotationSpeed);
-        }, false)
-
-        eventHandler.addKeyHandler(39, () => {
-            this.rotate(this.rotationSpeed)
-        })
-
-        eventHandler.addKeyHandler(32, () => {
-            this.shot();
-        });
-
-        eventHandler.addKeyHandler(38, () => {
-            this.moveForward()
-        });
-
-        eventHandler.addKeyHandler(40, () => {
-            this.moveBackward()
-        });
+        this.setupInputHandlers();
 
         const keyCodes = [49, 50, 51, 52, 53, 54, 55, 56, 57, 48];
 
@@ -95,6 +81,32 @@ export class Player extends GameObject {
         });
 
         eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
+    }
+
+    setupInputHandlers() {
+        eventHandler.addKeyHandler(37, deltaTime => {
+            const angleDelta = (-this.rotationSpeed * deltaTime * Math.PI) / 180;
+            this.rotate(angleDelta);
+        }, false);
+
+        eventHandler.addKeyHandler(39, deltaTime => {
+            const angleDelta = (this.rotationSpeed * deltaTime * Math.PI) / 180;
+            this.rotate(angleDelta);
+        });
+
+        eventHandler.addKeyHandler(32, () => {
+            this.shot();
+        });
+
+        eventHandler.addKeyHandler(38, deltaTime => {
+            this.moveForward(deltaTime);
+        });
+
+        eventHandler.addKeyHandler(40, deltaTime => {
+            this.moveBackward(deltaTime);
+        });
+
+        // Handle other keys...
     }
 
     shot() {
@@ -154,7 +166,7 @@ export class Player extends GameObject {
         part.x = -x - 2;
         part.y = -y - 2;
 
-        this.parts.push(part)
+        this.weapons.push(part)
     }
 
 
@@ -263,13 +275,13 @@ export class Player extends GameObject {
         graphicEngine.ctx.rotate(-Math.PI / 2);
         this.drawShip(graphicEngine);
 
-        this.parts.forEach(part => {
+        this.weapons.forEach(part => {
             part.render(graphicEngine);
         });
 
         graphicEngine.restore()
 
-        this.parts.forEach(part => {
+        this.weapons.forEach(part => {
             part.renderAfterTransform(graphicEngine);
         });
 
@@ -285,104 +297,58 @@ export class Player extends GameObject {
     }
 
     drawShip(graphicEngine) {
-        graphicEngine.drawSquare(-this.width / 2, -this.height / 2, this.width, this.height, this.color);
+        graphicEngine.ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height,);
     }
 
-    update() {
-        eventHandler.dispatchEvent(EventType.PLAYER_UPDATE, {object: this});
+    /**
+     * Update the player's state.
+     * @param {number} deltaTime - The time elapsed since the last update (in seconds).
+     */
+    update(deltaTime) {
+        eventHandler.dispatchEvent(EventType.PLAYER_UPDATE, { object: this });
 
-        this.parts.forEach(part => {
-            part.update();
-        })
+        this.weapons.forEach(part => {
+            part.update(deltaTime);
+        });
 
         this.healthBar.update(this.resources.health.amount(), this.resources.health.max(), 0);
         this.shieldBar.update(this.resources.shield.amount(), this.resources.shield.max(), 0);
     }
 
-    moveBackward() {
-        const newX = this.x - Math.cos(this.rotation) * this.speed;
-        const newY = this.y - Math.sin(this.rotation) * this.speed;
+    moveBackward(deltaTime) {
+        const distance = this.speed * deltaTime;
+        const deltaX = -Math.cos(this.rotation) * distance;
+        const deltaY = -Math.sin(this.rotation) * distance;
 
-        const originalX = this.x;
-        const originalY = this.y;
-        this.x = newX;
-        this.y = newY;
-
-        const vertices = this.getVertices(true);
-
-        const isWithinBounds = vertices.every(vertex =>
-            vertex.x >= 0 && vertex.x <= this.mapBorders.width &&
-            vertex.y >= 0 && vertex.y <= this.mapBorders.height
-        );
-
-        if (isWithinBounds) {
-            this.x = newX;
-            this.y = newY;
-        } else {
-            this.x = originalX;
-            this.y = originalY;
-        }
-
-        return this;
+        this.moveBy(deltaX, deltaY);
     }
 
-    moveForward() {
-        const newX = this.x + Math.cos(this.rotation) * this.speed;
-        const newY = this.y + Math.sin(this.rotation) * this.speed;
+    moveForward(deltaTime) {
+        const distance = this.speed * deltaTime;
+        const deltaX = Math.cos(this.rotation) * distance;
+        const deltaY = Math.sin(this.rotation) * distance;
 
-        const originalX = this.x;
-        const originalY = this.y;
-        this.x = newX;
-        this.y = newY;
-
-        const vertices = this.getVertices(true);
-
-        const isWithinBoundsX = vertices.every(vertex =>
-            vertex.x >= 0 && vertex.x <= this.mapBorders.width
-        );
-
-        const isWithinBoundsY = vertices.every(vertex =>
-            vertex.y >= 0 && vertex.y <= this.mapBorders.height
-        );
-
-        if (isWithinBoundsX && isWithinBoundsY) {
-            this.x = newX;
-            this.y = newY;
-        } else {
-            this.x = originalX;
-            this.y = originalY;
-
-
-            if (!isWithinBoundsX && !isWithinBoundsY) {
-                return this;
-            }
-
-            if (!isWithinBoundsX) {
-                const slideY = this.y + Math.sin(this.rotation) * this.speed;
-                this.y = (slideY >= 0 && slideY <= this.mapBorders.height) ? slideY : this.y;
-            }
-
-            if (!isWithinBoundsY) {
-                const slideX = this.x + Math.cos(this.rotation) * this.speed;
-                this.x = (slideX >= 0 && slideX <= this.mapBorders.width) ? slideX : this.x;
-            }
-        }
-
-        return this;
+        this.moveBy(deltaX, deltaY);
     }
 
-    rotate(angle) {
+    rotate(angleDelta) {
         const originalRotation = this.rotation;
-        this.rotation += angle * (Math.PI / 180);
+        this.rotation += angleDelta;
+
         if (this.rotation >= 2 * Math.PI) {
             this.rotation -= 2 * Math.PI;
+        } else if (this.rotation < 0) {
+            this.rotation += 2 * Math.PI;
         }
 
         const vertices = this.getVertices(true);
 
-        const isWithinBounds = vertices.every(vertex =>
-            vertex.x >= 0 && vertex.x <= this.mapBorders.width &&
-            vertex.y >= 0 && vertex.y <= this.mapBorders.height
+        const isWithinBounds = vertices.every(
+            vertex =>
+                vertex.x >= 0 &&
+                vertex.x <= this.mapBorders.width &&
+                vertex.y >= 0 &&
+                vertex.y <= this.mapBorders.height
         );
 
         if (!isWithinBounds) {
@@ -392,6 +358,32 @@ export class Player extends GameObject {
         this.dispatchRotation();
 
         return this;
+    }
+
+    moveBy(deltaX, deltaY) {
+        const newX = this.x + deltaX;
+        const newY = this.y + deltaY;
+
+        const originalX = this.x;
+        const originalY = this.y;
+
+        this.x = newX;
+        this.y = newY;
+
+        const vertices = this.getVertices(true);
+
+        const isWithinBounds = vertices.every(
+            vertex =>
+                vertex.x >= 0 &&
+                vertex.x <= this.mapBorders.width &&
+                vertex.y >= 0 &&
+                vertex.y <= this.mapBorders.height
+        );
+
+        if (!isWithinBounds) {
+            this.x = originalX;
+            this.y = originalY;
+        }
     }
 
     activateSlot(number) {
@@ -425,8 +417,8 @@ export class Player extends GameObject {
     }
 
     checkPartVertices(otherVertices) {
-        for (let x = 0; x < this.parts.length; x++) {
-            if (this.checkSAT(this.parts[x].getVertices(), otherVertices) === true) {
+        for (let x = 0; x < this.weapons.length; x++) {
+            if (this.checkSAT(this.weapons[x].getVertices(), otherVertices) === true) {
                 return true;
             }
         }
@@ -448,7 +440,7 @@ export class Player extends GameObject {
         ];
 
         if (parts) {
-            this.parts.forEach(part => {
+            this.weapons.forEach(part => {
                 const partVertices = part.getVertices();
 
                 partVertices.forEach(partVertice => {

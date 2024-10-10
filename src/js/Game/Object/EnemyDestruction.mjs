@@ -1,30 +1,46 @@
-import {Enemy} from "./Enemy.mjs";
-import {EventType} from "../../Event/EventType.mjs";
-import {Utils} from "../../Utils/Utils.mjs";
-import {Hitmark} from "./Hitmark.mjs";
+import { Enemy } from "./Enemy.mjs";
+import { EventType } from "../../Event/EventType.mjs";
+import { Utils } from "../../Utils/Utils.mjs";
+import { Hitmark } from "./Hitmark.mjs";
 
 export class EnemyDestruction {
-    constructor(image, x, y, width, height, duration = 3000) {
+    constructor(image, x, y, width, height, duration = 3) {
         this.image = image;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.duration = duration;
-        this.startTime = Date.now();
+        this.age = 0;
         this.pieces = [];
+        this.id = Utils.generateId();
         this.numPieces = Utils.random(5, 20);
         this.createPieces();
     }
 
     static fromEnemy(enemy) {
-        const destruction =  new EnemyDestruction(enemy.image, enemy.x, enemy.y, enemy.width, enemy.height, 3000);
+        const destruction = new EnemyDestruction(
+            enemy.image,
+            enemy.x,
+            enemy.y,
+            enemy.width,
+            enemy.height,
+            3
+        );
 
-        const hitmark = new Hitmark(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, enemy.width, enemy.height, 100, 100, 500);
+        const hitmark = new Hitmark(
+            enemy.x + enemy.width / 2,
+            enemy.y + enemy.height / 2,
+            enemy.width,
+            enemy.height,
+            100,
+            100,
+            0.5
+        );
+
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, hitmark);
 
         const explosionSound = loader.getAudio('explosion1');
-
         const audio = new Audio(explosionSound.src);
         audio.play();
 
@@ -33,21 +49,41 @@ export class EnemyDestruction {
         return destruction;
     }
 
-    renderOnMinimap() {
+    renderOnMinimap() {}
 
-    }
+    update(deltaTime) {
+        this.age += deltaTime;
+        if (this.age >= this.duration) {
+            eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, this);
+            return;
+        }
 
-    update() {
+        const lifeProgress = this.age / this.duration;
+        const opacity = 1 - lifeProgress;
 
+        for (const piece of this.pieces) {
+            piece.x += piece.floatX * deltaTime;
+            piece.y += piece.floatY * deltaTime;
+            piece.opacity = opacity;
+        }
     }
 
     createPieces() {
-        const pieceWidth = this.width / Math.ceil(Math.sqrt(this.numPieces));
-        const pieceHeight = this.height / Math.ceil(Math.sqrt(this.numPieces));
+        const gridSize = Math.ceil(Math.sqrt(this.numPieces));
+        const pieceWidth = this.width / gridSize;
+        const pieceHeight = this.height / gridSize;
+        const imagePieceWidth = this.image.width / gridSize;
+        const imagePieceHeight = this.image.height / gridSize;
 
         for (let i = 0; i < this.numPieces; i++) {
-            const offsetX = (i % Math.ceil(Math.sqrt(this.numPieces))) * pieceWidth;
-            const offsetY = Math.floor(i / Math.ceil(Math.sqrt(this.numPieces))) * pieceHeight;
+            const gridX = i % gridSize;
+            const gridY = Math.floor(i / gridSize);
+
+            const offsetX = gridX * pieceWidth;
+            const offsetY = gridY * pieceHeight;
+
+            const sourceX = gridX * imagePieceWidth;
+            const sourceY = gridY * imagePieceHeight;
 
             this.pieces.push({
                 x: this.x + offsetX + Math.random() * 10 - 5,
@@ -56,33 +92,31 @@ export class EnemyDestruction {
                 height: pieceHeight,
                 floatX: Math.random() * 200 - 100,
                 floatY: Math.random() * 200 - 100,
-                sourceX: offsetX,
-                sourceY: offsetY,
+                sourceX: sourceX,
+                sourceY: sourceY,
+                sourceWidth: imagePieceWidth,
+                sourceHeight: imagePieceHeight,
+                opacity: 1,
             });
         }
     }
 
     render(graphicEngine) {
-        const currentTime = Date.now();
-        const elapsedTime = currentTime - this.startTime;
-
-        if (elapsedTime < this.duration) {
-            for (const piece of this.pieces) {
-                piece.x += piece.floatX * (1 / 60);
-                piece.y += piece.floatY * (1 / 60);
-
-                const imageBaseWidth = this.image.width / Math.ceil(Math.sqrt(this.numPieces))
-                const imageBaseHeight = this.image.height / Math.ceil(Math.sqrt(this.numPieces))
-
-                graphicEngine.ctx.drawImage(
-                    this.image,
-                    piece.sourceX / 10 * imageBaseWidth, piece.sourceY / 10 * imageBaseHeight, imageBaseWidth, imageBaseHeight,
-                    piece.x, piece.y, piece.width, piece.height
-                );
-            }
-
-        } else {
-            eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, this);
+        for (const piece of this.pieces) {
+            graphicEngine.ctx.save();
+            graphicEngine.ctx.globalAlpha = piece.opacity;
+            graphicEngine.ctx.drawImage(
+                this.image,
+                piece.sourceX,
+                piece.sourceY,
+                piece.sourceWidth,
+                piece.sourceHeight,
+                piece.x,
+                piece.y,
+                piece.width,
+                piece.height
+            );
+            graphicEngine.ctx.restore();
         }
     }
 }

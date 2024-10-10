@@ -16,12 +16,14 @@ export class ParticleSystem {
         }
     }
 
+    update(deltaTime) {
+        this.particles.forEach(particle => {
+            particle.update(deltaTime);
+        });
+    }
 
     updateAndRender(graphicEngine, gameEngine) {
         graphicEngine.setColor('white')
-        this.particles.forEach(particle => {
-            particle.update();
-        });
 
         gameEngine.getVisibleObjects(this.particles).forEach(particle => {
             particle.render(graphicEngine);

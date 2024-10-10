@@ -3,6 +3,7 @@ import {GameObject} from "../Game/Object/GameObject.mjs";
 import {MapManager} from "../Game/Map/MapManager.mjs";
 import {Nebula} from "../Game/Object/Nebula.mjs";
 import {UIManager} from "../Ui/UIManager.mjs";
+import {EffectEngine} from "./EffectEngine.mjs";
 
 export class GameEngine {
     graphicEngine;
@@ -15,6 +16,8 @@ export class GameEngine {
         this.gameObjects = [];
         this.interfaceElements = [];
         this.player = null;
+
+        this.effectEngine = new EffectEngine(this);
 
         this.viewportWidth = this.graphicEngine.canvas.width;
         this.viewportHeight = this.graphicEngine.canvas.height;
@@ -37,6 +40,29 @@ export class GameEngine {
         eventHandler.addEventHandler(EventType.REMOVE_OBJECT, object => {
             this.removeObject(object.id)
         });
+
+        eventHandler.addKeyHandler(27, () => {
+            this.togglePause();
+        }, true);
+
+        eventHandler.addEventHandler(EventType.PROJECTILE_HIT, (eventData) => {
+            const { x, y, projectile } = eventData;
+            if (projectile.effect === 'explosion') {
+                this.effectEngine.applyExplosionEffect(x, y, projectile);
+            } else if (projectile.effect === 'electronic_charge') {
+                this.effectEngine.applyElectronicChargeEffect(x, y, projectile);
+            }
+        });
+    }
+
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        if (this.isPaused) {
+            console.log('Game Paused');
+        } else {
+            this.lastTime = performance.now();
+            this.accumulatedTime = 0;
+        }
     }
 
     generateRandomGameObjects(numObjects, objectWidth, objectHeight) {
@@ -106,6 +132,8 @@ export class GameEngine {
     }
 
     handleMouseDown(mouse) {
+        this.uiManager.handleMouseDown(mouse);
+
         const cameraOffsetX = this.getCameraPosition().x;
         const cameraOffsetY = this.getCameraPosition().y;
 
@@ -162,23 +190,43 @@ export class GameEngine {
 
         this.graphicEngine.translate(-cameraPos.x, -cameraPos.y);
 
-        this.mapManager.updateAndRender(this.graphicEngine, this);
-
-        this.getVisibleGameObjects()
-            .filter(object => object !== this.player)
-            .forEach(gameObject => {
-                gameObject.render(this.graphicEngine);
-            })
-        ;
+        this.renderBackground();
+        this.renderGameObjects();
 
         this.player.onRender(this.graphicEngine);
 
         this.graphicEngine.restore();
 
+        this.renderUI();
+        this.renderDebugInfo();
+        this.renderMinimap();
+
+    }
+
+    updateBackground(deltaTime) {
+        this.mapManager.update(deltaTime);
+    }
+
+    renderBackground() {
+        this.mapManager.render(this.graphicEngine, this);
+    }
+
+    renderGameObjects() {
+        const visibleObjects = this.getVisibleGameObjects();
+        visibleObjects.forEach(object => object.render(this.graphicEngine));
+        this.player.render(this.graphicEngine);
+    }
+
+    renderUI() {
         this.uiManager.render(this.graphicEngine);
+        this.interfaceElements.forEach(element => element.render(this.graphicEngine));
+        this.player.renderUi(this.graphicEngine);
+    }
+
+    renderDebugInfo() {
         this.graphicEngine.drawSquare(0, 0, this.viewportWidth, this.offsetY, 'black');
         this.graphicEngine.writeText(`FPS: ${Math.floor(this.fps)}`, 10, 10, 'yellow');
-        this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow');
+        // this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow');
         this.graphicEngine.writeText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`, 10, 30, 'yellow');
         this.graphicEngine.writeText(`Calculations: ${this.visibleObjectsCalculations}`, 10, 40, 'yellow');
 
@@ -203,29 +251,48 @@ export class GameEngine {
     }
 
     start() {
-        setInterval(() => {
-            requestAnimationFrame((currentTime) => {
-                this.frame(currentTime);
-            });
+        this.lastTime = performance.now();
+        this.accumulatedTime = 0;
+        this.timeStep = 1000 / 60; // Fixed time step in milliseconds (60 updates per second)
 
-        }, 1000 / 60)
+        const loop = (currentTime) => {
+            this.frame(currentTime);
+            requestAnimationFrame(loop);
+        };
+
+        requestAnimationFrame(loop);
     }
 
     frame(currentTime) {
-        if (!this.lastTime) {
-            this.lastTime = currentTime;
-        }
+        const deltaTime = currentTime - this.lastTime;
+        this.lastTime = currentTime;
 
-        this.frameCount++;
 
-        const deltaTime = (currentTime - this.lastTime) / 1000;
         this.accumulatedTime += deltaTime;
 
-        this.gameObjects
-            .forEach(gameObject => {
-                gameObject.update();
-            })
-        ;
+        if (!this.isPaused) {
+            while (this.accumulatedTime >= this.timeStep) {
+                this.update(this.timeStep / 1000);
+                this.accumulatedTime -= this.timeStep;
+            }
+        } else {
+            eventHandler.tick(0);
+        }
+
+        this.render();
+
+        this.fps = 1000 / deltaTime;
+    }
+
+    update(deltaTime) {
+        if (deltaTime === 0) return;
+
+        this.gameObjects.forEach(gameObject => {
+            gameObject.update(deltaTime);
+        });
+
+        this.updateBackground(deltaTime);
+        this.renderBackground();
 
         this.gameObjects.forEach((gameObject, index) => {
             if (gameObject.collisionObjects && gameObject.collisionObjects.length > 0) {
@@ -242,7 +309,6 @@ export class GameEngine {
         });
 
         const visibleObjects = this.getVisibleGameObjects();
-
         for (const obj of visibleObjects) {
             if (this.player.checkCollision(obj)) {
                 this.player.onCollision(obj);
@@ -254,25 +320,14 @@ export class GameEngine {
 
         this.handleRemovedObjects();
 
-        this.render();
-        this.player.update();
-        eventHandler.dispatchEvent(EventType.GAME_TICK, {gameObjects: this.gameObjects});
-        eventHandler.dispatchEvent(EventType.VISIBLE_OBJECTS_TICK, {gameObjects: visibleObjects});
+        eventHandler.tick(deltaTime);
 
-        this.renderMinimap();
-
-        if (deltaTime >= 1) {
-            this.fps = this.frameCount / deltaTime;
-            eventHandler.dispatchEvent(EventType.FPS_TICK, {fps: this.fps})
-            this.frameCount = 0;
-            this.lastTime = currentTime;
-        }
-
+        eventHandler.dispatchEvent(EventType.GAME_TICK, { gameObjects: this.gameObjects });
+        eventHandler.dispatchEvent(EventType.VISIBLE_OBJECTS_TICK, { gameObjects: visibleObjects });
     }
 
     removeObject(objectId) {
-        let index = this.gameObjects.findIndex(object => object.id === objectId);
-        this.indexesToRemove.push(index);
+        this.gameObjects = this.gameObjects.filter(object => object.id !== objectId);
     }
 
     getVisibleAndClosestObjects(referenceObject) {
@@ -314,6 +369,10 @@ export class GameEngine {
         });
     }
 
+    getObjectsByType(type) {
+        return this.getVisibleGameObjects().filter(object => object.type === type);
+    }
+
     isObjectVisible(object) {
         const cameraOffsetX = this.getCameraPosition().x;
         const cameraOffsetY = this.getCameraPosition().y;
@@ -332,20 +391,16 @@ export class GameEngine {
     }
 
     getVisibleGameObjects() {
-        const cameraOffsetX = this.getCameraPosition().x;
-        const cameraOffsetY = this.getCameraPosition().y;
+        const { x: camX, y: camY } = this.getCameraPosition();
+        const viewportRight = camX + this.viewportWidth;
+        const viewportBottom = camY + this.viewportHeight;
 
-        return this.gameObjects.filter(object => {
-            const objectRight = object.x + object.width;
-            const objectBottom = object.y + object.height;
-            const viewportRight = cameraOffsetX + this.viewportWidth;
-            const viewportBottom = cameraOffsetY + this.viewportHeight;
-
+        return this.gameObjects.filter(({ x, y, width, height }) => {
             return (
-                objectRight > cameraOffsetX &&
-                object.x < viewportRight &&
-                objectBottom > cameraOffsetY &&
-                object.y < viewportBottom
+                x + width > camX &&
+                x < viewportRight &&
+                y + height > camY &&
+                y < viewportBottom
             );
         });
     }

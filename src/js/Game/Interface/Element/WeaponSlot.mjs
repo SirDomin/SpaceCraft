@@ -31,9 +31,9 @@ export class WeaponSlot extends InterfaceObject {
         graphicEngine.ctx.strokeRect(this.x, this.y, this.width, this.height);
     }
 
-    update() {
+    update(deltaTime) {
         if (this.part) {
-            this.part.update();
+            this.part.update(deltaTime);
         }
     }
 

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Asteroid Canvas</title>
+    <style>
+        canvas {
+            background-color: #000;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<script>
+    class Asteroid {
+        constructor(x, y, radius, numVertices) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.numVertices = numVertices;
+            this.vertices = [];
+            this.angle = 0;
+            this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+
+            this.generateVertices();
+        }
+
+        generateVertices() {
+            const angleBetweenVertices = (Math.PI * 2) / this.numVertices;
+            for (let i = 0; i < this.numVertices; i++) {
+                const angle = i * angleBetweenVertices;
+                const variation = (Math.random() * 0.4) + 0.8; // Variation between 0.8 and 1.2
+                const r = this.radius * variation;
+                const x = r * Math.cos(angle);
+                const y = r * Math.sin(angle);
+                this.vertices.push({ x, y });
+            }
+        }
+
+        update() {
+            this.angle += this.rotationSpeed;
+        }
+
+        draw(ctx) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            ctx.beginPath();
+            ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
+            for (let i = 1; i < this.vertices.length; i++) {
+                ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = '#fff';
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        getVertices() {
+            const transformedVertices = [];
+            const cos = Math.cos(this.angle);
+            const sin = Math.sin(this.angle);
+            for (const vertex of this.vertices) {
+                const x = vertex.x * cos - vertex.y * sin + this.x;
+                const y = vertex.x * sin + vertex.y * cos + this.y;
+                transformedVertices.push({ x, y });
+            }
+            return transformedVertices;
+        }
+    }
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const asteroid = new Asteroid(400, 300, 50, 12);
+
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        asteroid.update();
+        asteroid.draw(ctx);
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+</script>
+</body>
+</html>
