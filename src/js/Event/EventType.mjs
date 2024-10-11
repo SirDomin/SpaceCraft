@@ -7,10 +7,13 @@ export class EventType {
     static PLAYER_UPDATE = 'playerupdate';
     static PLAYER_ROTATE = 'playerrotate';
     static RENDER_MINIMAP = 'renderminimap';
+    static UPDATE_MINIMAP = 'updateminimap';
     static ACTIVATE_SLOT = 'activateslot';
     static OBJECT_CREATED = 'objectcreated';
     static REMOVE_OBJECT = 'removeobject';
     static VISIBLE_OBJECTS_TICK = 'visibleobjectstick';
     static ENEMY_DESTROYED = 'enemydestroyed';
     static PROJECTILE_HIT = 'projectilehit';
+    static UI_ELEMENT_CREATE = 'uielementcreate';
+    static TOGGLE_PAUSE = 'togglepause';
 }

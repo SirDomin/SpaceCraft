@@ -14,6 +14,7 @@ window.eventHandler = new EventHandler();
 window.debug = false;
 window.renderCollisions = true;
 window.cameraPos = {};
+window.edit = false;
 
 let userInteracted = false;
 
@@ -38,6 +39,14 @@ window.loader.loadAllResources().then(() => {
         // player.handleMouseDown(mouse);
         return gameEngine.handleMouseDown(mouse);
     }, 'engine-keydown', true).setPriority(0);
+
+    eventHandler.addMouseHandler('mousemove', (mouse) => {
+        return gameEngine.handleMouseHover(mouse);
+    })
+
+    eventHandler.addMouseHandler('mouseup', (mouse) => {
+        return gameEngine.handleMouseUp(mouse);
+    })
 
     const hm = loader.getMediaFile('hitmark');
 
@@ -70,7 +79,7 @@ function generateEnemiesInCircle(player, x, r) {
         const enemyY = player.y + r * Math.sin(angle);
 
         const enemy = new Enemy(enemyX, enemyY, 20, 20);
-        enemy.setTarget(player)
+        // enemy.setTarget(player)
         enemies.push(enemy);
 
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, enemy);

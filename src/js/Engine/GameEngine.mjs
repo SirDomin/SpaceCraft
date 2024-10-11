@@ -4,6 +4,7 @@ import {MapManager} from "../Game/Map/MapManager.mjs";
 import {Nebula} from "../Game/Object/Nebula.mjs";
 import {UIManager} from "../Ui/UIManager.mjs";
 import {EffectEngine} from "./EffectEngine.mjs";
+import {UIText} from "../Game/Interface/Element/UIText.mjs";
 
 export class GameEngine {
     graphicEngine;
@@ -21,12 +22,20 @@ export class GameEngine {
 
         this.viewportWidth = this.graphicEngine.canvas.width;
         this.viewportHeight = this.graphicEngine.canvas.height;
-        this.mapManager = new MapManager().setPosition(graphicEngine.canvas.width, 75).setSize(70);
         this.uiManager = new UIManager(this);
+
+        this.mapManager = new MapManager().setPosition(graphicEngine.canvas.width, 75).setSize(70);
         this.lastTime = 0; // Time of the last frame
         this.frameCount = 0; // Number of frames counted
         this.fps = 0; // FPS value
         this.accumulatedTime = 0;
+
+        this.debugData = {
+            fps: new UIText(0.07, 0.01, 'test', '10px', 'lime').setIndex(1).init(),
+            position: new UIText(0.07, 0.02, 'test', '10px', 'lime').setIndex(1).init(),
+            rendering: new UIText(0.07, 0.03, 'test', '10px', 'lime').setIndex(1).init(),
+            calculations: new UIText(0.07, 0.04, 'test', '10px', 'lime').setIndex(1).init(),
+        }
 
         this.offsetY = 75;
         eventHandler.addEventHandler(EventType.PLAYER_ROTATE, (data) => {
@@ -42,8 +51,12 @@ export class GameEngine {
         });
 
         eventHandler.addKeyHandler(27, () => {
-            this.togglePause();
+            eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
         }, true);
+
+        eventHandler.addEventHandler(EventType.TOGGLE_PAUSE, () => {
+            this.togglePause();
+        })
 
         eventHandler.addEventHandler(EventType.PROJECTILE_HIT, (eventData) => {
             const { x, y, projectile } = eventData;
@@ -56,10 +69,21 @@ export class GameEngine {
     }
 
     togglePause() {
+        if (window.edit === true) {
+            window.edit = false;
+
+            if (this.isPaused === true) {
+                this.isPaused = false;
+            }
+
+            return;
+        }
+
         this.isPaused = !this.isPaused;
         if (this.isPaused) {
             console.log('Game Paused');
         } else {
+            console.log('Game Resumed')
             this.lastTime = performance.now();
             this.accumulatedTime = 0;
         }
@@ -112,7 +136,10 @@ export class GameEngine {
     }
 
     renderMinimap() {
-        this.mapManager.renderMinimap(this.graphicEngine, this.gameObjects, this.player)
+        eventHandler.dispatchEvent(EventType.UPDATE_MINIMAP, {
+            gameObjects: this.gameObjects,
+            player: this.player,
+        })
     }
 
     addPlayer(player) {
@@ -129,6 +156,14 @@ export class GameEngine {
         // this.generateStructuredGameObjects(50000, 10, 10);
 
         this.uiManager.generateUI();
+    }
+
+    handleMouseHover(mouse) {
+        this.uiManager.handleMouseMove(mouse);
+    }
+
+    handleMouseUp(mouse) {
+        this.uiManager.handleMouseUp(mouse);
     }
 
     handleMouseDown(mouse) {
@@ -197,8 +232,9 @@ export class GameEngine {
 
         this.graphicEngine.restore();
 
-        this.renderUI();
         this.renderDebugInfo();
+        this.renderUI();
+
         this.renderMinimap();
 
     }
@@ -219,22 +255,26 @@ export class GameEngine {
 
     renderUI() {
         this.uiManager.render(this.graphicEngine);
-        this.interfaceElements.forEach(element => element.render(this.graphicEngine));
-        this.player.renderUi(this.graphicEngine);
     }
 
     renderDebugInfo() {
-        this.graphicEngine.drawSquare(0, 0, this.viewportWidth, this.offsetY, 'black');
-        this.graphicEngine.writeText(`FPS: ${Math.floor(this.fps)}`, 10, 10, 'yellow');
-        // this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow');
-        this.graphicEngine.writeText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`, 10, 30, 'yellow');
-        this.graphicEngine.writeText(`Calculations: ${this.visibleObjectsCalculations}`, 10, 40, 'yellow');
+        // this.graphicEngine.ctx.fillStyle = 'black';
+        // this.graphicEngine.ctx.font = '10px Arial';
+        // this.graphicEngine.ctx.textAlign = 'left';
+        // this.graphicEngine.drawSquare(0, 0, this.viewportWidth, this.offsetY, 'black');
+        // this.graphicEngine.writeText(`FPS: ${Math.floor(this.fps)}`, 10, 10, 'yellow');
+        // // this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow');
+        // this.graphicEngine.writeText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`, 10, 30, 'yellow');
+        // this.graphicEngine.writeText(`Calculations: ${this.visibleObjectsCalculations}`, 10, 40, 'yellow');
+        //
+        // this.interfaceElements.forEach(interfaceElement => {
+        //     interfaceElement.render(this.graphicEngine);
+        // });
+        this.debugData.fps.setText(`FPS: ${Math.floor(this.fps)}`)
+        this.debugData.rendering.setText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`)
+        this.debugData.position.setText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`)
+        this.debugData.calculations.setText(`Calculations: ${this.visibleObjectsCalculations}`)
 
-        this.interfaceElements.forEach(interfaceElement => {
-            interfaceElement.render(this.graphicEngine);
-        });
-
-        this.player.renderUi(this.graphicEngine);
 
         this.debug();
     }
@@ -266,7 +306,6 @@ export class GameEngine {
     frame(currentTime) {
         const deltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
-
 
         this.accumulatedTime += deltaTime;
 

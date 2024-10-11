@@ -8,6 +8,7 @@ import {Resource} from "./Resource.mjs";
 import {Projectile} from "./Projectile.mjs";
 import {EntityTypes} from "../Object/EntityTypes.mjs";
 import {Weapon} from "./Weapon.mjs";
+import {UIProgressBar} from "../Interface/Element/UIProgressBar.mjs";
 
 export class Player extends GameObject {
 
@@ -21,10 +22,11 @@ export class Player extends GameObject {
 
         this.maxPartDistance = 100;
         this.weapons = [
-            Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Spread Shot')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'EMP Blaster')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Cannon Launcher')),
             // Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 3')),
             // Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 4')),
             // Part.fromJSON(this, loader.getResource('parts', 'Engine 2')),
@@ -178,31 +180,11 @@ export class Player extends GameObject {
     }
 
     preparePlayerInterface() {
-        const boxWidth = 50;
-        const boxHeight = 50;
-        const spacing = 10;
-        const numBoxes = 10;
+        this.healthBar = new UIProgressBar(0.25, 0.95, 0.5, 0.02, '#FF4C4C');
+        this.shieldBar = new UIProgressBar(0.25, 0.92, 0.5, 0.02, '#FFFFFF');
 
-        const totalWidth = numBoxes * boxWidth + (numBoxes - 1) * spacing;
-
-        const startX = (this.camera.width - totalWidth) / 2;
-
-        this.posX = startX;
-        let x = 0;
-        let y = this.camera.height - boxHeight - 20;
-
-        for (let i = 0; i < numBoxes; i++) {
-            x = startX + i * (boxWidth + spacing);
-
-            const weaponSlot = new WeaponSlot(x, y, boxWidth, boxHeight);
-
-            this.weaponSlots.push(weaponSlot);
-        }
-        const width = x - startX + boxWidth;
-
-        y -= 20;
-        this.healthBar = new Bar(startX, y, width, 10, '#FF4C4C');
-        this.shieldBar = new Bar(startX, y - 14, width, 10, '#FFFFFF');
+        eventHandler.dispatchEvent(EventType.UI_ELEMENT_CREATE, this.healthBar);
+        eventHandler.dispatchEvent(EventType.UI_ELEMENT_CREATE, this.shieldBar);
     }
 
     dispatchRotation() {
@@ -288,12 +270,7 @@ export class Player extends GameObject {
     }
 
     renderUi(graphicEngine) {
-        this.weaponSlots.forEach(weaponSlot => {
-            weaponSlot.render(graphicEngine);
-        });
 
-        this.healthBar.render(graphicEngine);
-        this.shieldBar.render(graphicEngine);
     }
 
     drawShip(graphicEngine) {

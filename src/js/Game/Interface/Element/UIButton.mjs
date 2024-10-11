@@ -1,21 +1,30 @@
 import {UIElement} from "./UIElement.mjs";
 
 export class UIButton extends UIElement {
-    constructor(x, y, width, height, text, onClick) {
-        super(x, y, width, height);
+    constructor(xPercent, yPercent, widthPercent, heightPercent, text, onClick) {
+        super(xPercent, yPercent, widthPercent, heightPercent);
         this.text = text;
         this.onClickCallback = onClick;
     }
 
-    render(graphicEngine) {
-        if (this.visible) {
-            graphicEngine.ctx.fillStyle = "#555";
-            graphicEngine.ctx.fillRect(this.x, this.y, this.width, this.height);
+    render(graphicEngine, scaled) {
+        const ctx = graphicEngine.ctx;
+        const { x, y, width, height } = scaled;
 
-            graphicEngine.ctx.fillStyle = "#FFF";
-            graphicEngine.ctx.textAlign = "center";
-            graphicEngine.ctx.font = "20px Arial";
-            graphicEngine.ctx.fillText(this.text, this.x + this.width / 2, this.y + this.height / 2 + 7);
+        if (this.visible) {
+            ctx.fillStyle = this.hovering ? "#777" : "#555";
+            ctx.fillRect(x, y, width, height);
+
+            ctx.fillStyle = "#FFF";
+            ctx.textAlign = "center";
+            ctx.font = "20px Arial";
+            ctx.fillText(this.text, x + width / 2, y + height / 2 + 7);
+
+            if (this.hovering) {
+                ctx.strokeStyle = "#FFF";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, width, height);
+            }
         }
     }
 
