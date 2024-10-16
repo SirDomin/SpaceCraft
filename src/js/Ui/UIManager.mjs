@@ -4,6 +4,7 @@ import {EventType} from "../Event/EventType.mjs";
 import {InterfaceType} from "../Game/Interface/InterfaceType.mjs";
 import {UIButton} from "../Game/Interface/Element/UIButton.mjs";
 import {Box} from "../Game/Interface/Element/Box.mjs";
+import {GameState} from "../Game/GameState.mjs";
 
 export class UIManager {
     constructor(gameEngine, gridSize = 1) {
@@ -177,14 +178,16 @@ export class UIManager {
 
     generateUI() {
         const startButton = new UIButton(0.17, 0.01, 0.08, 0.02, "Pause", () => {
-            if (startButton.text === "Pause") {
-                startButton.text = "Resume"
-            } else {
-                startButton.text = "Pause"
-            }
-
             eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
         });
+
+        eventHandler.addEventHandler(EventType.GAME_STATE_CHANGE, (event) => {
+            if (event.state === GameState.PAUSE) {
+                startButton.text = 'Resume';
+            } else if (event.state === GameState.GAME) {
+                startButton.text = 'Pause';
+            }
+        })
 
         const editButton = new UIButton(0.17, 0.04, 0.08, 0.02, "Edit", () => {
             eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});

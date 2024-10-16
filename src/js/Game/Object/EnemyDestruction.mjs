@@ -1,10 +1,9 @@
-import { Enemy } from "./Enemy.mjs";
 import { EventType } from "../../Event/EventType.mjs";
 import { Utils } from "../../Utils/Utils.mjs";
 import { Hitmark } from "./Hitmark.mjs";
 
 export class EnemyDestruction {
-    constructor(image, x, y, width, height, duration = 3) {
+    constructor(image, x, y, width, height, duration = 1) {
         this.image = image;
         this.x = x;
         this.y = y;
@@ -25,7 +24,7 @@ export class EnemyDestruction {
             enemy.y,
             enemy.width,
             enemy.height,
-            3
+            1
         );
 
         const hitmark = new Hitmark(

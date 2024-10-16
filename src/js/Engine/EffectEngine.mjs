@@ -2,6 +2,8 @@ import {EntityTypes} from "../Game/Object/EntityTypes.mjs";
 import {EventType} from "../Event/EventType.mjs";
 import {ExplosionEffect} from "../Game/Effect/ExplosionEffect.mjs";
 import {ElectricEffect} from "../Game/Effect/ElectricEffect.mjs";
+import {VoidRiftEffect} from "../Game/Effect/VoidRiftEffect.mjs";
+import {AcidSplashEffect} from "../Game/Effect/AcidSplashEffect.mjs";
 
 export class EffectEngine {
     constructor(gameEngine) {
@@ -60,6 +62,55 @@ export class EffectEngine {
 
         const electricEffect = new ElectricEffect(x, y, radius);
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, electricEffect);
+    }
+
+    applyAcidSplashEffect(x, y, projectile) {
+        const enemies = this.gameEngine.getObjectsByType(EntityTypes.ENEMY);
+        const radius = projectile.effectRadius;
+        const damageOverTime = projectile.effectParams.damageOverTime || 10;
+        const duration = projectile.effectParams.duration || 5;
+
+        enemies.forEach(enemy => {
+            const distance = Math.hypot(
+                enemy.x + enemy.width / 2 - x,
+                enemy.y + enemy.height / 2 - y
+            );
+            if (distance <= radius) {
+                enemy.applyStatusEffect('acid', {
+                    damageOverTime: damageOverTime,
+                    duration: duration,
+                });
+            }
+        });
+
+        const acidEffect = new AcidSplashEffect(x, y, radius);
+        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, acidEffect);
+    }
+
+    applyVoidRiftEffect(x, y, projectile) {
+        const enemies = this.gameEngine.getObjectsByType(EntityTypes.ENEMY);
+        const radius = projectile.effectRadius;
+        const slowPercentage = projectile.effectParams.slowPercentage || 50;
+        const duration = projectile.effectParams.duration || 3;
+
+        enemies.forEach(enemy => {
+            const distance = Math.hypot(
+                enemy.x + enemy.width / 2 - x,
+                enemy.y + enemy.height / 2 - y
+            );
+            if (distance <= radius) {
+                enemy.applyStatusEffect('void_rift', {
+                    percentage: slowPercentage,
+                    duration: duration,
+                    radius: radius,
+                    x: x,
+                    y: y,
+                });
+            }
+        });
+
+        const voidRiftEffect = new VoidRiftEffect(x, y, radius);
+        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, voidRiftEffect);
     }
 
 }

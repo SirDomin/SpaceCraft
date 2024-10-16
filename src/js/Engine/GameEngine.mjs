@@ -1,10 +1,12 @@
 import {EventType} from "../Event/EventType.mjs";
 import {GameObject} from "../Game/Object/GameObject.mjs";
+import {Asteroid} from "../Game/Object/Asteroid.mjs";
 import {MapManager} from "../Game/Map/MapManager.mjs";
 import {Nebula} from "../Game/Object/Nebula.mjs";
 import {UIManager} from "../Ui/UIManager.mjs";
 import {EffectEngine} from "./EffectEngine.mjs";
 import {UIText} from "../Game/Interface/Element/UIText.mjs";
+import {GameState} from "../Game/GameState.mjs";
 
 export class GameEngine {
     graphicEngine;
@@ -47,7 +49,7 @@ export class GameEngine {
         });
 
         eventHandler.addEventHandler(EventType.REMOVE_OBJECT, object => {
-            this.removeObject(object.id)
+            this.removeObject(object.id);
         });
 
         eventHandler.addKeyHandler(27, () => {
@@ -60,10 +62,23 @@ export class GameEngine {
 
         eventHandler.addEventHandler(EventType.PROJECTILE_HIT, (eventData) => {
             const { x, y, projectile } = eventData;
-            if (projectile.effect === 'explosion') {
-                this.effectEngine.applyExplosionEffect(x, y, projectile);
-            } else if (projectile.effect === 'electronic_charge') {
-                this.effectEngine.applyElectronicChargeEffect(x, y, projectile);
+            switch (projectile.effect) {
+                case 'explosion':
+                    this.effectEngine.applyExplosionEffect(x, y, projectile);
+                    break;
+                case 'electronic_charge':
+                    this.effectEngine.applyElectronicChargeEffect(x, y, projectile);
+                    break;
+                case 'acid_splash':
+                    this.effectEngine.applyAcidSplashEffect(x, y, projectile);
+                    break;
+                case 'void_rift':
+                    this.effectEngine.applyVoidRiftEffect(x, y, projectile);
+                    break;
+                // Add more cases as needed
+                default:
+                    // No special effect
+                    break;
             }
         });
     }
@@ -87,6 +102,19 @@ export class GameEngine {
             this.lastTime = performance.now();
             this.accumulatedTime = 0;
         }
+
+        let state;
+        if (this.isPaused) {
+            state = GameState.PAUSE;
+        } else {
+            state = GameState.GAME;
+        }
+        
+        eventHandler.dispatchEvent(EventType.GAME_STATE_CHANGE, {state: state})
+    }
+
+    pause() {
+        this.isPaused = true;
     }
 
     generateRandomGameObjects(numObjects, objectWidth, objectHeight) {
@@ -99,6 +127,10 @@ export class GameEngine {
 
             this.gameObjects.push(obj);
         }
+
+        // const asteroid = new Asteroid(this.player.x, this.player.y);
+        // this.gameObjects.push(asteroid);
+
     }
 
     generateStructuredGameObjects(numObjectsPerRow, objectWidth, objectHeight) {
@@ -434,12 +466,12 @@ export class GameEngine {
         const viewportRight = camX + this.viewportWidth;
         const viewportBottom = camY + this.viewportHeight;
 
-        return this.gameObjects.filter(({ x, y, width, height }) => {
+        return this.gameObjects.filter(({ x, y, width, height, alwaysVisible }) => {
             return (
                 x + width > camX &&
                 x < viewportRight &&
                 y + height > camY &&
-                y < viewportBottom
+                y < viewportBottom || alwaysVisible
             );
         });
     }

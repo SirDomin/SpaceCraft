@@ -16,4 +16,8 @@ export class EventType {
     static PROJECTILE_HIT = 'projectilehit';
     static UI_ELEMENT_CREATE = 'uielementcreate';
     static TOGGLE_PAUSE = 'togglepause';
+    static PROJECTILE_RENDER = 'projectilerender';
+    static GAME_STATE_CHANGE = 'gamestatechange';
+    static PLAYER_DESTROYED = 'playerdestroyed';
+
 }

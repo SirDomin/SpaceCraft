@@ -90,7 +90,7 @@ export class ResourceLoader {
         }).data;
     }
 
-    getResource(filename, resourceName) {
+    getResource(filename, resourceName = null) {
         const resourceFile = this.resources.json.find(resource => {
             return resource.filename === filename;
         });
@@ -108,10 +108,26 @@ export class ResourceLoader {
         return resource;
     }
 
+    getResourceBy(filename, key, value) {
+        const resourceFile = this.resources.json.find(resource => {
+            return resource.filename === filename;
+        });
+        if (!resourceFile) {
+            throw new Error(`File not found: ${filename}`);
+        }
+
+        const resource = resourceFile.data.find(item => item[key] === value);
+        if (!resource) {
+            throw new Error(`Resource not found: ${key} => ${value}`);
+        }
+        return resource;
+    }
+
     async loadJSONFilesFromDirectory() {
         return [
             'parts.json',
             'weapons.json',
+            'enemies.json',
         ];
     }
 
@@ -131,7 +147,10 @@ export class ResourceLoader {
             'hitmark.png',
             'targetmark.png',
             'enemy1.png',
+            'player0.png',
             'player1.png',
+            'texture.jpg',
+            'texture-asteroid.png',
         ];
     }
 }

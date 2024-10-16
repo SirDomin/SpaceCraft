@@ -1,4 +1,4 @@
-export class Particle {
+export class MapParticle {
     constructor(x, y, size, speedX, speedY, opacity, mapWidth, mapHeight) {
         this.x = x;
         this.y = y;

@@ -1,0 +1,85 @@
+[
+  {
+    "type": "shooter",
+    "health": 300,
+    "speed": 120,
+    "force": 80,
+    "mechanics": {
+      "shooting": true,
+      "exploding": false,
+      "replication": false
+    }
+  },
+  {
+    "type": "exploder",
+    "health": 200,
+    "speed": 100,
+    "force": 150,
+    "mechanics": {
+      "shooting": false,
+      "exploding": true,
+      "replication": false
+    }
+  },
+  {
+    "type": "replicator",
+    "health": 150,
+    "speed": 110,
+    "force": 70,
+    "mechanics": {
+      "shooting": false,
+      "exploding": false,
+      "replication": true
+    }
+  },
+  {
+    "type": "spread_shooter",
+    "health": 400,
+    "speed": 120,
+    "force": 80,
+    "mechanics": {
+      "shootingType": "spread_shot",
+      "spreadCount": 5,
+      "spreadAngle": 0.523599,
+      "shootInterval": 3,
+      "projectileSpeed": 200
+    }
+  },
+  {
+    "type": "burst_shooter",
+    "health": 350,
+    "speed": 110,
+    "force": 90,
+    "mechanics": {
+      "shootingType": "burst_shot",
+      "burstCount": 3,
+      "burstDelay": 0.2,
+      "shootInterval": 5,
+      "projectileSpeed": 250
+    }
+  },
+  {
+    "type": "homing_missile",
+    "health": 300,
+    "speed": 100,
+    "force": 85,
+    "mechanics": {
+      "shootingType": "homing_missile",
+      "shootInterval": 4,
+      "homingSpeed": 150
+    }
+  },
+  {
+    "type": "explosive_shooter",
+    "health": 450,
+    "speed": 90,
+    "force": 100,
+    "mechanics": {
+      "shootingType": "explosive_shot",
+      "shootInterval": 6,
+      "explosionRadius": 50,
+      "explosionDamage": 20,
+      "projectileSpeed": 180
+    }
+  }
+]

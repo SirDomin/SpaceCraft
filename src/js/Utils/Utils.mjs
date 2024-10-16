@@ -3,6 +3,10 @@ export class Utils {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
+    static randomFloat(min, max) {
+        return Math.random() * (max - min + 1) + min;
+    }
+
     static randomColor() {
         return 'rgb(xxx, xxx, xxx)'.replace(/xxx/g, char => {
             return this.random(0, 255);
@@ -29,7 +33,7 @@ export class Utils {
         if (array.length === 0) {
             return null;
         }
-        
+
         const randomIndex = Math.floor(Math.random() * array.length);
         return array[randomIndex];
     }

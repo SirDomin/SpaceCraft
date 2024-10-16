@@ -10,14 +10,34 @@
     "damage": 120,
     "piercing": 5,
     "force": 1,
-    "accuracy": 90,
+    "accuracy": 99,
     "shotInterval": 0.2,
     "projectileSpeed": 350,
     "projectileType": "PLASMA_SHOT",
-    "burstCount": 3,
+    "burstCount": 1,
     "burstInterval": 0.05,
     "reloadTime": 2,
-    "ammoCapacity": 30
+    "ammoCapacity": 4
+  },
+  {
+    "name": "Single Rifle",
+    "x": 20,
+    "y": -15,
+    "width": 8,
+    "height": 25,
+    "color": "blue",
+    "range": 600,
+    "damage": 120,
+    "piercing": 0,
+    "force": 1,
+    "accuracy": 99,
+    "shotInterval": 0.1,
+    "projectileSpeed": 350,
+    "projectileType": "PLASMA_SHOT",
+    "burstCount": 1,
+    "burstInterval": 0.05,
+    "reloadTime": 0.1,
+    "ammoCapacity": 1
   },
   {
     "name": "EMP Blaster",
@@ -28,7 +48,7 @@
       "duration": 5
     },
     "damage": 50,
-    "projectileSpeed": 250,
+    "projectileSpeed": 550,
     "shotInterval": 0.2,
     "x": 20,
     "y": -15,
@@ -118,5 +138,53 @@
     "numberOfProjectiles": 1,
     "ammoCapacity": 50,
     "reloadTime": 1
+  },
+  {
+    "name": "Acidic Torpedo Launcher",
+    "projectileEffect": "acid_splash",
+    "projectileEffectRadius": 30,
+    "projectileEffectParams": {
+      "damageOverTime": 100,
+      "duration": 5
+    },
+    "damage": 70,
+    "projectileSpeed": 300,
+    "shotInterval": 1.5,
+    "x": 25,
+    "y": -20,
+    "width": 10,
+    "height": 30,
+    "color": "green",
+    "range": 800,
+    "piercing": 0,
+    "force": 2,
+    "accuracy": 85,
+    "projectileType": "TORPEDO",
+    "ammoCapacity": 10,
+    "reloadTime": 3
+  },
+  {
+    "name": "Void Rift Generator",
+    "projectileEffect": "void_rift",
+    "projectileEffectRadius": 100,
+    "projectileEffectParams": {
+      "slowPercentage": 0,
+      "duration": 10
+    },
+    "damage": 0,
+    "projectileSpeed": 400,
+    "shotInterval": 10,
+    "x": -25,
+    "y": -20,
+    "width": 12,
+    "height": 35,
+    "color": "purple",
+    "range": 700,
+    "piercing": 0,
+    "force": 0,
+    "accuracy": 100,
+    "projectileType": "VOID_ORB",
+    "ammoCapacity": 1,
+    "reloadTime": 2
   }
 ]

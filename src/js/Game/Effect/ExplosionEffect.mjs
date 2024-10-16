@@ -15,10 +15,16 @@ export class ExplosionEffect extends GameObject {
         this.createFragments(numFragments);
     }
 
+    static explode(x, y, radius, numParticles = 50, numFragments = 0) {
+        const explosion = new ExplosionEffect(x, y, radius, numParticles, numFragments);
+
+        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, explosion);
+    }
+
     createParticles(numParticles) {
         for (let i = 0; i < numParticles; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 200 + 50; // Random speed for particles
+            const speed = Math.random() * 200 + 50;
             const vx = Math.cos(angle) * speed;
             const vy = Math.sin(angle) * speed;
 
@@ -27,12 +33,15 @@ export class ExplosionEffect extends GameObject {
                 y: this.y + this.height / 2,
                 vx: vx,
                 vy: vy,
-                radius: Math.random() * 3 + 2, // Particle size
+                radius: Math.random() * 3 + 2,
                 age: 0,
-                lifespan: Math.random() * 0.8 + 0.3, // Random lifespan for particles
+                lifespan: Math.random() * 0.8 + 0.3,
                 color: this.getRandomExplosionColor()
             });
         }
+    }
+
+    renderOnMinimap(minimap, graphicEngine) {
     }
 
     createFragments(numFragments) {

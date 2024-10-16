@@ -36,6 +36,7 @@ export class GameObject {
         this.rotation = 0;
         this.collisionObjects = [];
         this.damage = 0;
+        this.alwaysVisible = false;
         this.collisionPriority = 0;
     }
 
@@ -92,20 +93,16 @@ export class GameObject {
         );
     }
 
-    getMidPoint() {
-        return new Point(this.x + this.width / 2, this.y + this.height / 2);
-    }
-
     onClick() {
         // Handle click event
     }
 
-    moveTo(x, y) {
-        this.target = new Point(x, y);
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
     }
 
     collide(object) {
-        game.removeObject(this.id);
     }
 
     getVertices() {
@@ -139,15 +136,66 @@ export class GameObject {
     }
 
     checkCollision(object) {
-        this.collisionChecks++;
-        if (object === this) {
-            return false;
+        const thisVertices = this.getVertices();
+        const otherVertices = object.getVertices();
+
+        return this.checkSAT(thisVertices, otherVertices);
+    }
+
+    // checkCollision(object) {
+    //     this.collisionChecks++;
+    //     if (object === this) {
+    //         return false;
+    //     }
+    //     return (
+    //         this.x + this.width >= object.x &&
+    //         this.x <= object.x + object.width &&
+    //         this.y + this.height >= object.y &&
+    //         this.y <= object.y + object.height
+    //     );
+    // }
+
+    checkSAT(thisVertices, otherVertices) {
+        const axes = [
+            ...this.getAxes(thisVertices),
+            ...this.getAxes(otherVertices)
+        ];
+
+        for (const axis of axes) {
+            const [minA, maxA] = this.projectOntoAxis(thisVertices, axis);
+            const [minB, maxB] = this.projectOntoAxis(otherVertices, axis);
+
+            if (maxA < minB || maxB < minA) {
+                return false;
+            }
         }
-        return (
-            this.x + this.width >= object.x &&
-            this.x <= object.x + object.width &&
-            this.y + this.height >= object.y &&
-            this.y <= object.y + object.height
-        );
+        return true;
+    }
+
+    projectOntoAxis(vertices, axis) {
+        let min = Infinity;
+        let max = -Infinity;
+
+        for (const vertex of vertices) {
+            const projection = (vertex.x * axis.x + vertex.y * axis.y);
+            min = Math.min(min, projection);
+            max = Math.max(max, projection);
+        }
+
+        return [min, max];
+    }
+
+    getAxes(vertices) {
+        const axes = [];
+        for (let i = 0; i < vertices.length; i++) {
+            const nextIndex = (i + 1) % vertices.length;
+            const edge = {
+                x: vertices[nextIndex].x - vertices[i].x,
+                y: vertices[nextIndex].y - vertices[i].y
+            };
+
+            axes.push({ x: -edge.y, y: edge.x });
+        }
+        return axes;
     }
 }

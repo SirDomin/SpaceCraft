@@ -8,7 +8,7 @@ export class ElectricEffect extends GameObject {
         this.duration = 1;
         this.radius = radius;
         this.lightningBolts = [];
-        this.numBolts = 5; // Number of lightning bolts
+        this.numBolts = 5;
         this.createLightningBolts();
     }
 

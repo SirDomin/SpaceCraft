@@ -184,8 +184,8 @@ export class Part {
     renderLineToPlayer(graphicEngine) {
         const playerX = (this.player.width / 2) - this.player.width / 2;
         const playerY = (this.player.height / 2) - this.player.height / 2;
-        const objectX = this.x + this.width / 2;
-        const objectY = this.y + this.height / 2;
+        const objectX = this.globalCoords.x + this.width / 2;
+        const objectY = this.globalCoords.y + this.height / 2;
         graphicEngine.ctx.strokeStyle = this.player.color;
         graphicEngine.ctx.lineWidth = 1;
         graphicEngine.ctx.beginPath();

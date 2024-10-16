@@ -9,6 +9,10 @@ import {Projectile} from "./Projectile.mjs";
 import {EntityTypes} from "../Object/EntityTypes.mjs";
 import {Weapon} from "./Weapon.mjs";
 import {UIProgressBar} from "../Interface/Element/UIProgressBar.mjs";
+import {FireParticleEmitter} from "./FireParticleEmitter.mjs";
+import {Hitmark} from "../Object/Hitmark.mjs";
+import {ExplosionEffect} from "../Effect/ExplosionEffect.mjs";
+import {EnemyDestruction} from "../Object/EnemyDestruction.mjs";
 
 export class Player extends GameObject {
 
@@ -17,15 +21,20 @@ export class Player extends GameObject {
 
         this.rotation = -Math.PI / 2;
         this.clicked = false;
-        this.rotationSpeed = 100;
+        this.rotationSpeed = 150;
         this.speed = 400;
 
         this.maxPartDistance = 100;
         this.weapons = [
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Single Rifle')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Spread Shot')),
-            Weapon.fromJSON(this, loader.getResource('weapons', 'EMP Blaster')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'EMP Blaster')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Cannon Launcher')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Acidic Torpedo Launcher')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Void Rift Generator')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Cannon Launcher')),
             // Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 3')),
             // Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 4')),
@@ -37,10 +46,10 @@ export class Player extends GameObject {
             // new Part(this,  -30, 30, 10, 10),
         ];
 
-        this.image = loader.getMediaFile('player1');
+        this.image = loader.getMediaFile('player0');
 
         this.resources = {
-            shield: new Resource(Resource.ENERGY, 100, 50),
+            shield: new Resource(Resource.SHIELD, 100, 50),
             health: new Resource(Resource.HEALTH, 100, 33)
         }
 
@@ -49,8 +58,11 @@ export class Player extends GameObject {
         this.weaponSlots = [];
 
         this.collisionObjects = [
-            EntityTypes.ENEMY
+            EntityTypes.ENEMY,
+            EntityTypes.COLLECTIBLE
         ]
+
+        this.type = EntityTypes.PLAYER;
 
         this.mapBorders = {
             width: 0,
@@ -82,6 +94,10 @@ export class Player extends GameObject {
             }, true);
         });
 
+        this.engineEmitter = new FireParticleEmitter(
+            this.x, this.y + this.height, 50, 100, 1, 10
+        );
+
         eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
     }
 
@@ -107,8 +123,6 @@ export class Player extends GameObject {
         eventHandler.addKeyHandler(40, deltaTime => {
             this.moveBackward(deltaTime);
         });
-
-        // Handle other keys...
     }
 
     shot() {
@@ -254,7 +268,7 @@ export class Player extends GameObject {
     render(graphicEngine) {
         graphicEngine.rotate(this, this.rotation)
 
-        graphicEngine.ctx.rotate(-Math.PI / 2);
+        graphicEngine.ctx.rotate(Math.PI / 2);
         this.drawShip(graphicEngine);
 
         this.weapons.forEach(part => {
@@ -290,6 +304,20 @@ export class Player extends GameObject {
 
         this.healthBar.update(this.resources.health.amount(), this.resources.health.max(), 0);
         this.shieldBar.update(this.resources.shield.amount(), this.resources.shield.max(), 0);
+
+    }
+
+    updateEngineEmitters(deltaTime) {
+        const forwardX = Math.cos(this.rotation) * this.speed * deltaTime;
+        const forwardY = Math.sin(this.rotation) * this.speed * deltaTime;
+
+        const leftEngineX = this.x + this.width / 2;
+        const leftEngineY = this.y + this.height / 2;
+
+        this.engineEmitter.x = leftEngineX - 5;
+        this.engineEmitter.y = leftEngineY - 5;
+        this.engineEmitter.particleSize = this.speed * deltaTime;
+        this.engineEmitter.update(deltaTime, forwardX, forwardY);
     }
 
     moveBackward(deltaTime) {
@@ -304,6 +332,7 @@ export class Player extends GameObject {
         const distance = this.speed * deltaTime;
         const deltaX = Math.cos(this.rotation) * distance;
         const deltaY = Math.sin(this.rotation) * distance;
+        this.updateEngineEmitters(deltaTime);
 
         this.moveBy(deltaX, deltaY);
     }
@@ -388,10 +417,37 @@ export class Player extends GameObject {
     }
 
     onCollision(object) {
+        if(object.type === EntityTypes.COLLECTIBLE) {
+            console.log('collected');
+            eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, object);
+        }
+        if (object.type === EntityTypes.ENEMY) {
+            // this.resources.health.removeAmount(object.damage);
+            Hitmark.hit(object.x, object.y, 10)
 
-        this.resources.health.removeAmount(object.damage);
-        // eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, object)
+            this.dealDamage(object.damage);
+
+            object.onCollision(this);
+        }
+        if (object.type === EntityTypes.PROJECTILE_ENEMY) {
+            this.dealDamage(object.damage);
+        }
     }
+
+    dealDamage(damage) {
+        if (this.resources.shield.amount() <= 0) {
+            this.resources.health.removeAmount(damage);
+        } else {
+            this.resources.shield.removeAmount(damage);
+        }
+
+        if (this.resources.health.amount() <= 0) {
+            eventHandler.dispatchEvent(EventType.PLAYER_DESTROYED, this)
+
+            // ExplosionEffect.explode(this.x + this.width / 2, this.y + this.height / 2, 400, 100, 100);
+        }
+    }
+
 
     checkPartVertices(otherVertices) {
         for (let x = 0; x < this.weapons.length; x++) {

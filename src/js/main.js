@@ -8,6 +8,7 @@ import {Enemy} from "./Game/Object/Enemy.mjs";
 import {Hitmark} from "./Game/Object/Hitmark.mjs";
 import {ModifiedAudio} from "./Game/Audio/ModifiedAudio.mjs";
 import {Utils} from "./Utils/Utils.mjs";
+import {EnemyFactory} from "./Game/Factory/EnemyFactory.mjs";
 
 window.gameScale = 1.3;
 window.eventHandler = new EventHandler();
@@ -23,6 +24,7 @@ const graphicEngine = new GraphicEngine(document.body);
 window.gameEngine = new GameEngine(graphicEngine);
 
 window.loader = new ResourceLoader();
+
 
 window.loader.loadAllResources().then(() => {
     const player = new Player(5, 10, 50, 50);
@@ -66,7 +68,15 @@ window.loader.loadAllResources().then(() => {
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, hitmark);
     })
 
+    document.addEventListener('visibilitychange', () => {
+        eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE);
+    })
+
     generateEnemiesInCircle(player, 50, 400);
+    // generateEnemiesInCircle(player, 50, 800);
+    // generateEnemiesInCircle(player, 50, 1200);
+    // generateEnemiesInCircle(player, 50, 1600);
+    // generateEnemiesInCircle(player, 50, 2000);
 });
 
 function generateEnemiesInCircle(player, x, r) {
@@ -78,14 +88,31 @@ function generateEnemiesInCircle(player, x, r) {
         const enemyX = player.x + r * Math.cos(angle);
         const enemyY = player.y + r * Math.sin(angle);
 
-        const enemy = new Enemy(enemyX, enemyY, 20, 20);
-        // enemy.setTarget(player)
+        // const enemy = EnemyFactory.createEnemy('burst_shooter');
+        const enemy = EnemyFactory.createRandomEnemy();
+        enemy.setPosition(enemyX, enemyY)
+        enemy.enableReplication();
+        enemy.setTarget(player)
+        enemy.desiredDistance = r;
+
         enemies.push(enemy);
 
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, enemy);
     }
 
+    EnemyFactory.createRandomEnemy();
+
     return enemies;
 }
 
+function generateXEnemiesInFront(numEnemies, player) {
+    for (let i = 0; i < numEnemies; i++) {
+        const enemyX = player.x;
+        const enemyY = player.y - (20 * i)
 
+        const enemy = new Enemy(enemyX, enemyY, 20, 20, 20000);
+        // enemy.setTarget(player)
+
+        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, enemy);
+    }
+}

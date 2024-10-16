@@ -195,6 +195,7 @@ export class Weapon {
 
         projectile.speed = this.projectileSpeed;
         projectile.damage = this.damage;
+        projectile.force = this.projectileForce;
         projectile.image = this.projectileImage;
         projectile.collisionObjects = [EntityTypes.ENEMY];
 
@@ -275,7 +276,6 @@ export class Weapon {
     }
 
     render(graphicEngine) {
-        this.renderLineToPlayer(graphicEngine);
     }
 
     renderAfterTransform(graphicEngine) {
@@ -312,14 +312,16 @@ export class Weapon {
             );
         }
         graphicEngine.ctx.restore();
+        this.renderLineToPlayer(graphicEngine);
+
         this.renderLineToTarget(graphicEngine);
     }
 
     renderLineToPlayer(graphicEngine) {
-        const playerX = (this.player.width / 2) - this.player.width / 2;
-        const playerY = (this.player.height / 2) - this.player.height / 2;
-        const objectX = this.x + this.width / 2;
-        const objectY = this.y + this.height / 2;
+        const playerX = this.player.x + this.player.width / 2;
+        const playerY = this.player.y + this.player.height / 2;
+        const objectX = this.globalCoords.x;
+        const objectY = this.globalCoords.y;
         graphicEngine.ctx.strokeStyle = this.player.color;
         graphicEngine.ctx.lineWidth = 1;
         graphicEngine.ctx.beginPath();

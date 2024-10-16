@@ -1,4 +1,4 @@
-import {Particle} from "./Particle.mjs";
+import {MapParticle} from "./MapParticle.mjs";
 
 export class ParticleSystem {
     constructor(numParticles, map) {
@@ -12,7 +12,7 @@ export class ParticleSystem {
             const speedX = (Math.random() - this.particleSpeedMax) * this.particleSpeedMax;
             const speedY = (Math.random() - this.particleSpeedMax) * this.particleSpeedMax;
             const opacity = Math.random() * this.opacityMax + this.opacityMax;
-            this.particles.push(new Particle(Math.random() * map.width, Math.random() * map.height, size, speedX, speedY, opacity, map.width, map.height));
+            this.particles.push(new MapParticle(Math.random() * map.width, Math.random() * map.height, size, speedX, speedY, opacity, map.width, map.height));
         }
     }
 

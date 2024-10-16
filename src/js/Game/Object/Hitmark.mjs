@@ -18,6 +18,12 @@ export class Hitmark extends GameObject{
         this.generateParticles();
     }
 
+    static hit(x, y, radius) {
+        const hitmark = new Hitmark(x, y, 10, 10, radius, 30, 500);
+
+        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, hitmark);
+    }
+
     generateParticles() {
         for (let i = 0; i < this.numParticles; i++) {
             const angle = Math.random() * 2 * Math.PI;

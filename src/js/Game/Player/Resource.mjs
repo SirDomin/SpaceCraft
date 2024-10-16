@@ -11,7 +11,7 @@ export class Resource {
     }
 
     setAmount(amount) {
-        this.amount = amount;
+        this.currentAmount = amount;
     }
 
     setMaxAmount(amount) {
