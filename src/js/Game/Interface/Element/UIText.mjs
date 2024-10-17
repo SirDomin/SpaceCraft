@@ -8,6 +8,7 @@ export class UIText extends UIElement {
         this.color = color;
         this.resizeHandleSize = 1;
         this.recalculated = false;
+        this.textAlign = 'left'
 
         return this;
     }
@@ -24,14 +25,37 @@ export class UIText extends UIElement {
             this.heightPercent = parseInt(this.fontSize, 10) / graphicEngine.canvas.height;
         }
 
-        const { x, y } = scaled;
+        const { x, y, width } = scaled;
 
         if (this.visible) {
             ctx.fillStyle = this.color;
             ctx.font = `${this.fontSize} Arial`;
-            ctx.textAlign = "left";
-            ctx.fillText(this.text, x, y + parseInt(this.fontSize, 10));
+
+            ctx.textAlign = this.textAlign;
+
+            let renderX = x;
+
+            switch (this.textAlign) {
+                case 'center':
+                    renderX = x + width / 2;
+                    break;
+                case 'right':
+                    renderX = x + width;
+                    break;
+                case 'left':
+                default:
+                    renderX = x;
+                    break;
+            }
+
+            ctx.fillText(this.text, renderX, y + parseInt(this.fontSize, 10));
         }
+    }
+
+    setTextAlign(align) {
+        this.textAlign = align;
+
+        return this;
     }
 
     setText(newText) {

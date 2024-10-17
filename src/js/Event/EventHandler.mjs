@@ -48,8 +48,8 @@ export class EventHandler {
 
                 handler.handled = true;
 
-                if (debug) {
-                    console.log(`Event %c${handler.name}%c has been dispatched with deltaTime: ${deltaTime}`, 'color: cyan; font-weight: bold;', 'color: inherit;');
+                if (debug && handler.debug !== false) {
+                    console.log(`Event %c${handler.name || "for keycode " + keyCode}%c has been dispatched with deltaTime: ${deltaTime}`, 'color: cyan; font-weight: bold;', 'color: inherit;');
                 }
 
                 handler.callback(deltaTime);
@@ -66,7 +66,7 @@ export class EventHandler {
                 this.mouseHandlers[x].handled = true;
             }
             if (debug) {
-                console.log(`Event %c${this.mouseHandlers[x].name}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', this.mouse);
+                console.log(`Event %c${this.mouseHandlers[x].name || x}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', this.mouse);
             }
             this.mouseHandlers[x].callback(this.mouse);
         }
@@ -80,6 +80,8 @@ export class EventHandler {
         if (debug) {
             console.log(`Event for key %c${keyCode}%c has been created`, 'color: green; font-weight: bold;', 'color: inherit;');
         }
+
+        return this.keyHandlers[keyCode];
     }
 
     addEventHandler(eventType, callback, name = null, single = false, priority = 0) {
@@ -104,7 +106,7 @@ export class EventHandler {
             }).forEach(handler => {
                 handler.getCallback()(eventData);
                 if (debug && handler.debug !== false) {
-                    console.log(`Event %c${handler.name}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', eventData);
+                    console.log(`Event %c${handler.name || eventType}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', eventData);
                 }
             });
         }
@@ -183,7 +185,7 @@ export class EventHandler {
             handler.getCallback()(this.mouse);
 
             if (debug && handler.debug !== false) {
-                console.log(`Event %c${handler.getName()}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', this.mouse);
+                console.log(`Event %c${handler.getName() || 'mouseup'}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', this.mouse);
             }
 
             if (handler.getSingle() === true) {
@@ -204,7 +206,7 @@ export class EventHandler {
             handler.getCallback()(this.mouse);
 
             if (debug && handler.debug !== false) {
-                console.log(`Event %c${handler.getName()}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', this.mouse);
+                console.log(`Event %c${handler.getName() || 'mousemove'}%c has been dispatched with: `, 'color: cyan; font-weight: bold;', 'color: inherit;', this.mouse);
             }
 
             if (handler.getSingle() === true) {

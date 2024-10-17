@@ -27,18 +27,6 @@ export class EnemyDestruction {
             1
         );
 
-        const hitmark = new Hitmark(
-            enemy.x + enemy.width / 2,
-            enemy.y + enemy.height / 2,
-            enemy.width,
-            enemy.height,
-            100,
-            100,
-            0.5
-        );
-
-        eventHandler.dispatchEvent(EventType.OBJECT_CREATED, hitmark);
-
         const explosionSound = loader.getAudio('explosion1');
         const audio = new Audio(explosionSound.src);
         audio.play();

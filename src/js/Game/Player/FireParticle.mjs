@@ -1,7 +1,4 @@
-// File: FireParticle.mjs
-
 import { GameObject } from "../Object/GameObject.mjs";
-import { EventType } from "../../Event/EventType.mjs";
 
 export class FireParticle extends GameObject {
     constructor(x, y, velocityX, velocityY, size, lifespan) {
@@ -25,12 +22,13 @@ export class FireParticle extends GameObject {
         this.size = this.initialSize * (1 - lifeRatio) * this.pulse;
 
         if (this.age >= this.lifespan) {
-            eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, this);
+            // eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, this);
         }
     }
 
     render(graphicEngine) {
         const ctx = graphicEngine.ctx;
+
         const opacity = 1 - (this.age / this.lifespan);
         ctx.save();
         ctx.globalAlpha = opacity;

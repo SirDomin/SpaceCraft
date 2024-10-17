@@ -21,7 +21,7 @@ export class Projectile extends GameObject {
         this.targetHits = [];
         this.force = 0;
         this.piercing = config.piercing || 1;
-        this.angle = Math.atan2(speedY, speedX);
+        this.rotation = Math.atan2(speedY, speedX);
         this.lifespan = config.lifespan || 2;
         this.age = 0;
         this.length = this.height;
@@ -90,30 +90,61 @@ export class Projectile extends GameObject {
             const deltaX = targetX - this.x;
             const deltaY = targetY - this.y;
 
-            this.angle = Math.atan2(deltaY, deltaX);
-        } else {
-            this.angle = this.angle || 0;
+            this.rotation = Math.atan2(deltaY, deltaX);
         }
 
-        const laserStartX = this.x;
-        const laserStartY = this.y;
-        const laserEndX = this.x + Math.cos(this.angle) * this.length;
-        const laserEndY = this.y + Math.sin(this.angle) * this.length;
+        const vertices = this.getVertices();
+        if (vertices.length > 0) {
+            ctx.save();
 
-        ctx.save();
+            ctx.beginPath();
 
-        const gradient = ctx.createLinearGradient(laserStartX, laserStartY, laserEndX, laserEndY);
-        gradient.addColorStop(0, `rgba(255, 0, 0, 1)`);
-        gradient.addColorStop(1, `rgba(255, 255, 0, 0.5)`);
+            ctx.moveTo(vertices[0].x, vertices[0].y);
 
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = this.width;
+            vertices.forEach((vertex, index) => {
+                if (index > 0) {
+                    ctx.lineTo(vertex.x, vertex.y);
+                }
+            });
 
-        ctx.beginPath();
-        ctx.moveTo(laserStartX, laserStartY);
-        ctx.lineTo(laserEndX, laserEndY);
-        ctx.stroke();
+            ctx.lineTo(vertices[0].x, vertices[0].y);
 
-        ctx.restore();
+            ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = this.width;
+
+            ctx.fill();
+
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        if (window.renderCollisions === true) {
+            eventHandler.dispatchEvent(EventType.RENDER_COLLISION, this.getVertices())
+        }
     }
 }
+
+
+//
+// const laserStartX = this.x;
+// const laserStartY = this.y;
+// const laserEndX = this.x + Math.cos(this.rotation) * this.height;
+// const laserEndY = this.y + Math.sin(this.rotation) * this.width;
+//
+// ctx.save();
+//
+// const gradient = ctx.createLinearGradient(laserStartX, laserStartY, laserEndX, laserEndY);
+// gradient.addColorStop(0, `rgba(255, 0, 0, 1)`);
+// gradient.addColorStop(1, `rgba(255, 255, 0, 0.5)`);
+//
+// ctx.strokeStyle = gradient;
+// ctx.lineWidth = this.width;
+//
+// ctx.beginPath();
+// ctx.moveTo(laserStartX, laserStartY);
+// ctx.lineTo(laserEndX, laserEndY);
+// ctx.stroke();
+//
+// ctx.restore();

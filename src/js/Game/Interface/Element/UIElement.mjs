@@ -19,6 +19,9 @@ export class UIElement {
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
 
+        this.isDraggable = false;
+        this.isHandled = false;
+
         this.initialWidth = null;
         this.initialHeight = null;
 
@@ -256,6 +259,6 @@ export class UIElement {
     }
 
     onClick() {
-        // To be implemented in subclasses
+
     }
 }

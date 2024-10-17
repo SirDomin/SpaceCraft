@@ -15,7 +15,7 @@ export class EnemyFactory {
 
         const { type, health, speed, force, mechanics } = config;
 
-        const enemy = new Enemy(0, 0, 50, 50, health);
+        const enemy = new Enemy(0, 0, 30, 30, health);
 
         enemy.baseSpeed = speed;
         enemy.maxSpeed = speed;

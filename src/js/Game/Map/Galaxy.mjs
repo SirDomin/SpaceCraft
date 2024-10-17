@@ -42,9 +42,9 @@ export class Galaxy {
         }
     }
 
-    update() {
+    update(deltaTime) {
         this.stars.forEach(star => {
-            star.angle += 0.001 * (1 - star.distance / this.galaxyRadius);
+            star.angle += 0.1 * (1 - star.distance / this.galaxyRadius) * deltaTime;
         });
     }
 
@@ -71,14 +71,14 @@ export class Galaxy {
 
     generateRandomColor() {
         const starColors = [
-            '#FFFFFF', // White stars
-            '#FFD700', // Yellow stars
-            '#FFFAF0', // Soft white stars
-            '#B0E0E6', // Pale blue stars
-            '#FFA07A', // Light orange stars
-            '#FFE4B5', // Light yellow stars
-            '#87CEFA', // Soft blue stars
-            '#F0E68C', // Khaki stars (pale yellow)
+            '#FFFFFF',
+            '#FFD700',
+            '#FFFAF0',
+            '#B0E0E6',
+            '#FFA07A',
+            '#FFE4B5',
+            '#87CEFA',
+            '#F0E68C',
         ];
 
         const randomIndex = Math.floor(Math.random() * starColors.length);

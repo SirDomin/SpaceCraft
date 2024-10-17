@@ -14,9 +14,9 @@ export class Enemy extends GameObject {
 
         this.type = EntityTypes.ENEMY;
 
-        this.baseSpeed = 100;
+        this.baseSpeed = 500;
         this.maxSpeed = this.baseSpeed * (0.8 + Math.random() * 0.4);
-        this.acceleration = 10;
+        this.acceleration = 100;
         this.velocityX = 0;
         this.velocityY = 0;
 
@@ -50,8 +50,8 @@ export class Enemy extends GameObject {
     }
 
     renderOnMinimap(minimap, graphicEngine) {
-        const width = this.width * 2;
-        const height = this.height * 2;
+        const width = this.width * 4;
+        const height = this.height * 4;
         graphicEngine.drawSquare(
             this.x * minimap.scale + minimap.x,
             this.y * minimap.scale + minimap.y,
@@ -70,11 +70,9 @@ export class Enemy extends GameObject {
             const distance = Math.hypot(desiredX, desiredY);
 
             if (distance < this.desiredDistance) {
-                // Enemy is too close, move away from the player to maintain distance
                 let desiredVelocityX = -(desiredX / distance) * this.maxSpeed;
                 let desiredVelocityY = -(desiredY / distance) * this.maxSpeed;
 
-                // Adjust velocity based on random offset (for unpredictability)
                 const randomOffsetAngle = (Math.random() - 0.5) * (Math.PI / 4);
                 const cosAngle = Math.cos(randomOffsetAngle);
                 const sinAngle = Math.sin(randomOffsetAngle);
@@ -123,7 +121,6 @@ export class Enemy extends GameObject {
                 desiredVelocityX = adjustedVelocityX;
                 desiredVelocityY = adjustedVelocityY;
 
-                // Calculate steering force
                 const steeringX = desiredVelocityX - this.velocityX;
                 const steeringY = desiredVelocityY - this.velocityY;
 
@@ -148,7 +145,6 @@ export class Enemy extends GameObject {
                 }
             }
         }
-
 
         this.shootAtPlayer(deltaTime);
 
@@ -193,7 +189,6 @@ export class Enemy extends GameObject {
         if (!this.activeEffects.some(effect => effect.type === 'slow')) {
             this.maxSpeed = this.baseSpeed;
         }
-
     }
 
     applyGravitationalEffect(effect) {
@@ -325,10 +320,9 @@ export class Enemy extends GameObject {
 
         this.healthBar.render(graphicEngine);
 
-        this.getVertices().forEach(vertex => {
-            graphicEngine.ctx.fillStyle = 'red';
-            graphicEngine.ctx.fillRect(vertex.x, vertex.y, 2, 2);
-        })
+        if (window.renderCollisions === true) {
+            eventHandler.dispatchEvent(EventType.RENDER_COLLISION, this.getVertices());
+        }
     }
 
     enableShooting() {
@@ -344,6 +338,10 @@ export class Enemy extends GameObject {
     }
 
     shootAtPlayer(deltaTime) {
+        if(Math.random() < 0.9) {
+            return;
+        }
+
         if (this.isBurstShooter && this.target) {
             this.timeSinceLastShot += deltaTime;
 
@@ -373,10 +371,6 @@ export class Enemy extends GameObject {
                     this.timeSinceLastShot = 0;
                 }
             }
-        }
-
-        if(Math.random() < 0.3) {
-            return;
         }
 
         if (this.isShooter && this.target) {
@@ -439,7 +433,7 @@ export class Enemy extends GameObject {
                     x, y,
                     0, 0,
                     EntityTypes.PROJECTILE_ENEMY,
-                    { target: this.target, homing: true, homingSpeed: 3, projectileType: 'PROJECTILE_HOMING', lifespan: 2, damage: 40}
+                    { target: this.target, homing: true, homingSpeed: 3, projectileType: 'PROJECTILE_HOMING', lifespan: 4, damage: 40}
                 );
                 projectile.collisionObjects.push(EntityTypes.PLAYER);
                 projectile.collisionObjects.push(EntityTypes.PLAYER);

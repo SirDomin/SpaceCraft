@@ -95,7 +95,7 @@ export class Player extends GameObject {
         });
 
         this.engineEmitter = new FireParticleEmitter(
-            this.x, this.y + this.height, 50, 100, 1, 10
+            this.x, this.y + this.height, 10, 10, 0.2, 10
         );
 
         eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
@@ -105,45 +105,28 @@ export class Player extends GameObject {
         eventHandler.addKeyHandler(37, deltaTime => {
             const angleDelta = (-this.rotationSpeed * deltaTime * Math.PI) / 180;
             this.rotate(angleDelta);
-        }, false);
+        }, false).debug=false;
 
         eventHandler.addKeyHandler(39, deltaTime => {
             const angleDelta = (this.rotationSpeed * deltaTime * Math.PI) / 180;
             this.rotate(angleDelta);
-        });
+        }).debug=false;
 
         eventHandler.addKeyHandler(32, () => {
             this.shot();
-        });
+        }).debug=false;
 
         eventHandler.addKeyHandler(38, deltaTime => {
             this.moveForward(deltaTime);
-        });
+        }).debug=false;
 
         eventHandler.addKeyHandler(40, deltaTime => {
             this.moveBackward(deltaTime);
-        });
+        }).debug=false;
     }
 
     shot() {
-        // const halfWidth = this.width / 2;
-        // const halfHeight = this.height / 2;
-        // let cos = Math.cos(this.rotation - Math.PI / 2);
-        // let sin = Math.sin(this.rotation - Math.PI / 2);
-        //
-        // const pos = {
-        //     x: this.x + halfWidth + (cos - halfHeight * 1.1 * sin),
-        //     y: this.y + halfHeight + (sin + halfHeight * 1.1 * cos)
-        // }
-        // const projectile = new Projectile(pos.x , pos.y, Math.cos(this.rotation), Math.sin(this.rotation), EntityTypes.PROJECTILE_PLAYER);
-        //
-        // projectile.collisionObjects = [
-        //     EntityTypes.ENEMY
-        // ]
-        //
-        // projectile.damage = 200;
 
-        // eventHandler.dispatchEvent(EventType.OBJECT_CREATED, projectile);
     }
 
     getDistanceTo(object) {
@@ -266,6 +249,8 @@ export class Player extends GameObject {
     }
 
     render(graphicEngine) {
+        this.engineEmitter.render(graphicEngine);
+
         graphicEngine.rotate(this, this.rotation)
 
         graphicEngine.ctx.rotate(Math.PI / 2);
@@ -305,6 +290,7 @@ export class Player extends GameObject {
         this.healthBar.update(this.resources.health.amount(), this.resources.health.max(), 0);
         this.shieldBar.update(this.resources.shield.amount(), this.resources.shield.max(), 0);
 
+        this.engineEmitter.updateParticles(deltaTime);
     }
 
     updateEngineEmitters(deltaTime) {
@@ -317,7 +303,7 @@ export class Player extends GameObject {
         this.engineEmitter.x = leftEngineX - 5;
         this.engineEmitter.y = leftEngineY - 5;
         this.engineEmitter.particleSize = this.speed * deltaTime;
-        this.engineEmitter.update(deltaTime, forwardX, forwardY);
+        this.engineEmitter.update(deltaTime, forwardX * 20, forwardY * 20);
     }
 
     moveBackward(deltaTime) {
@@ -422,9 +408,6 @@ export class Player extends GameObject {
             eventHandler.dispatchEvent(EventType.REMOVE_OBJECT, object);
         }
         if (object.type === EntityTypes.ENEMY) {
-            // this.resources.health.removeAmount(object.damage);
-            Hitmark.hit(object.x, object.y, 10)
-
             this.dealDamage(object.damage);
 
             object.onCollision(this);
@@ -443,8 +426,6 @@ export class Player extends GameObject {
 
         if (this.resources.health.amount() <= 0) {
             eventHandler.dispatchEvent(EventType.PLAYER_DESTROYED, this)
-
-            // ExplosionEffect.explode(this.x + this.width / 2, this.y + this.height / 2, 400, 100, 100);
         }
     }
 

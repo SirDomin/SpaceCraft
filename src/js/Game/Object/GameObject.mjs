@@ -29,7 +29,7 @@ export class GameObject {
         this.collisionChecks = 0;
         this.id = Utils.generateId();
         this.color = 'darkblue';
-        this.speed = 20 * (Math.random() + 0.1); // Speed in units per second
+        this.speed = 20 * (Math.random() + 0.1);
         this.target = null;
         this.serverTick = false;
         this.renderPriority = 1;
@@ -64,7 +64,6 @@ export class GameObject {
     }
 
     onRender(graphicEngine) {
-        // Implement any additional rendering logic here
     }
 
     getDistanceTo(object) {
@@ -94,7 +93,6 @@ export class GameObject {
     }
 
     onClick() {
-        // Handle click event
     }
 
     setPosition(x, y) {
@@ -132,7 +130,6 @@ export class GameObject {
     }
 
     onCollision(object) {
-        // Handle collision with another object
     }
 
     checkCollision(object) {
@@ -141,19 +138,6 @@ export class GameObject {
 
         return this.checkSAT(thisVertices, otherVertices);
     }
-
-    // checkCollision(object) {
-    //     this.collisionChecks++;
-    //     if (object === this) {
-    //         return false;
-    //     }
-    //     return (
-    //         this.x + this.width >= object.x &&
-    //         this.x <= object.x + object.width &&
-    //         this.y + this.height >= object.y &&
-    //         this.y <= object.y + object.height
-    //     );
-    // }
 
     checkSAT(thisVertices, otherVertices) {
         const axes = [

@@ -16,19 +16,19 @@ export class Weapon {
 
         this.range = config.range || 300;
         this.damage = config.damage || 50;
-        this.accuracy = config.accuracy || 100; // Percentage
-        this.shotInterval = config.shotInterval || 0.5; // Seconds
-        this.projectileSpeed = config.projectileSpeed || 200; // Units per second
+        this.accuracy = config.accuracy || 100;
+        this.shotInterval = config.shotInterval || 0.5;
+        this.projectileSpeed = config.projectileSpeed || 200;
         this.projectileType = config.projectileType || EntityTypes.PROJECTILE_PLAYER;
         this.projectilePiercing = config.piercing || 1;
         this.projectileForce = config.force || 1;
         this.projectileImage = config.projectileImage || null;
         this.soundEffect = config.soundEffect || null;
         this.burstCount = config.burstCount || 1;
-        this.burstInterval = config.burstInterval || 0.1; // Seconds between shots in a burst
-        this.reloadTime = config.reloadTime || 0; // Seconds to reload
+        this.burstInterval = config.burstInterval || 0.1;
+        this.reloadTime = config.reloadTime || 0;
         this.ammoCapacity = config.ammoCapacity || Infinity;
-        this.projectileEffect = config.projectileEffect || null; // 'explosion' or 'electronic_charge'
+        this.projectileEffect = config.projectileEffect || null;
         this.projectileEffectRadius = config.projectileEffectRadius || 0;
         this.projectileEffectParams = config.projectileEffectParams || {};
         this.ammo = this.ammoCapacity;

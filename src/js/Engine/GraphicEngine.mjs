@@ -88,12 +88,10 @@ export class GraphicEngine {
 
 
     rotate(object, rotation) {
-        this.ctx.save(); // Save the current canvas state
+        this.ctx.save();
 
-        // Move the origin to the player's center
         this.ctx.translate(object.x + object.width / 2, object.y + object.height / 2);
 
-        // Rotate the canvas around the player's center
         this.ctx.rotate(rotation);
     }
 

@@ -20,14 +20,13 @@ export class AcidSplashEffect extends GameObject {
         const ctx = graphicEngine.ctx;
         const opacity = 1 - (this.age / this.duration);
 
-        // Step 1: Create the irregular splash shape
-        const numSplashes = 20; // Number of splash points
-        const splashRadius = this.radius * 0.7 + Math.random() * (this.radius * 0.3); // Vary the splash radius
+        const numSplashes = 20;
+        const splashRadius = this.radius * 0.7 + Math.random() * (this.radius * 0.3);
         const points = [];
 
         for (let i = 0; i < numSplashes; i++) {
-            const angle = (Math.PI * 2 * i) / numSplashes; // Distribute points evenly around the circle
-            const randomLength = splashRadius + Math.random() * (this.radius * 0.4); // Vary length of splashes
+            const angle = (Math.PI * 2 * i) / numSplashes;
+            const randomLength = splashRadius + Math.random() * (this.radius * 0.4);
 
             const x = this.x + this.radius + Math.cos(angle) * randomLength;
             const y = this.y + this.radius + Math.sin(angle) * randomLength;

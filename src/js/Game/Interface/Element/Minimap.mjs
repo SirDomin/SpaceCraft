@@ -22,7 +22,7 @@ export class Minimap extends UIElement {
         eventHandler.addEventHandler(EventType.UPDATE_MINIMAP, data => {
             this.player = data.player;
             this.objects = data.gameObjects;
-        })
+        }).debug = false
         this.index = 1;
     }
 

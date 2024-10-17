@@ -25,13 +25,9 @@ export class MapManager {
 
         this.minimap = new Minimap(0.002, 0.002, 0.07, 0.08, this.map.width, this.map.height);
         this.minimap.getBackgroundGradient = this.getBackgroundGradient;
+        this.minimap.index = 5;
 
         eventHandler.dispatchEvent(EventType.UI_ELEMENT_CREATE, this.minimap);
-
-        // eventHandler.addEventHandler(EventType.RENDER_MINIMAP, e => {
-        //     // this.renderMinimap(e.graphicEngine, e.objects, e.player)
-        // }, 'minimap.render', false, 10);
-
 
         const coordinates = this.getRandomCoordinatesOnMap(2000)
         const galaxy = new Galaxy(coordinates.x, coordinates.y).setGalaxyRadius(400).setNumStars(200);

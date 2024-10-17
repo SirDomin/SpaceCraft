@@ -12,8 +12,8 @@ export class Asteroid extends GameObject {
     constructor(x, y) {
         super(x, y, 0, 0);
 
-        this.radius = 150;
-        this.numVertices = 10;
+        this.radius = 200;
+        this.numVertices = 20;
 
         this.vertices = [];
         this.angle = 0;
@@ -44,11 +44,16 @@ export class Asteroid extends GameObject {
     }
 
     generateVertices() {
+        this.vertices = [];
         const angleBetweenVertices = (Math.PI * 2) / this.numVertices;
+
         for (let i = 0; i < this.numVertices; i++) {
-            const angle = i * angleBetweenVertices;
-            const variation = (Math.random() * 0.4) + 0.8;
+            const angleOffset = (Math.random() - 0.2) * angleBetweenVertices * 0.1;
+            const angle = i * angleBetweenVertices + angleOffset;
+
+            const variation = (Math.random() * 0.2) + 0.9;
             const r = this.radius * variation;
+
             const x = r * Math.cos(angle);
             const y = r * Math.sin(angle);
 
@@ -84,15 +89,12 @@ export class Asteroid extends GameObject {
             this.radius * 2.5,
         );
 
-
-        // ctx.strokeStyle = '#fff';
-        // ctx.stroke();
         ctx.restore();
 
-        // this.getVertices().forEach(vertice => {
-        //     ctx.fillStyle = 'red';
-        //     ctx.fillRect(vertice.x - 2, vertice.y - 2, 5, 5);
-        // })
+
+        if (window.renderCollisions === true) {
+            eventHandler.dispatchEvent(EventType.RENDER_COLLISION, this.getVertices());
+        }
     }
 
     onCollision(object) {
@@ -143,7 +145,7 @@ export class Asteroid extends GameObject {
     }
 
     createHitEffect(x, y) {
-        const hitmark = new Hitmark(x, y, 5, 10, this.radius / 4, 40, 300);
+        const hitmark = new Hitmark(x, y, 5, 10, this.radius / 4, 40, 0.2);
 
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, hitmark);
     }

@@ -44,11 +44,11 @@ window.loader.loadAllResources().then(() => {
 
     eventHandler.addMouseHandler('mousemove', (mouse) => {
         return gameEngine.handleMouseHover(mouse);
-    })
+    }).debug = false
 
     eventHandler.addMouseHandler('mouseup', (mouse) => {
         return gameEngine.handleMouseUp(mouse);
-    })
+    }).debug = false
 
     const hm = loader.getMediaFile('hitmark');
 
@@ -64,7 +64,7 @@ window.loader.loadAllResources().then(() => {
         // const audio = new Audio(Utils.getRandomElement(hitSounds).src);
         // audio.volume = Utils.random(20, 40) / 100
         // audio.play();
-        const hitmark = new Hitmark(e.x, e.y, 20, 20, 10, 4, 100);
+        const hitmark = new Hitmark(e.x, e.y, 20, 20, 10, 4, 0.2);
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, hitmark);
     })
 
@@ -90,10 +90,10 @@ function generateEnemiesInCircle(player, x, r) {
 
         // const enemy = EnemyFactory.createEnemy('burst_shooter');
         const enemy = EnemyFactory.createRandomEnemy();
+
         enemy.setPosition(enemyX, enemyY)
-        enemy.enableReplication();
+        // enemy.enableReplication();
         enemy.setTarget(player)
-        enemy.desiredDistance = r;
 
         enemies.push(enemy);
 

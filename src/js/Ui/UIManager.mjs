@@ -1,10 +1,9 @@
-import {WeaponSlot} from "../Game/Interface/Element/WeaponSlot.mjs";
-import {EventHandler} from "../Event/EventHandler.mjs";
 import {EventType} from "../Event/EventType.mjs";
-import {InterfaceType} from "../Game/Interface/InterfaceType.mjs";
 import {UIButton} from "../Game/Interface/Element/UIButton.mjs";
 import {Box} from "../Game/Interface/Element/Box.mjs";
 import {GameState} from "../Game/GameState.mjs";
+import {UISlider} from "../Game/Interface/Element/UISlider.mjs";
+import {UIText} from "../Game/Interface/Element/UIText.mjs";
 
 export class UIManager {
     constructor(gameEngine, gridSize = 1) {
@@ -18,13 +17,13 @@ export class UIManager {
         window.addEventListener("resize", this.handleResize.bind(this));
 
         eventHandler.addEventHandler(EventType.UI_ELEMENT_CREATE, (element) => {
-            console.log(element);
-            this.addElement(element);
+            this.addElement(element, element.index);
         })
     }
 
-    addElement(element) {
+    addElement(element, index = 1) {
         element.gridSize = this.gridSize;
+        element.index = index;
         this.elements.push(element);
     }
 
@@ -51,7 +50,7 @@ export class UIManager {
         const ctx = this.graphicEngine.ctx;
         const canvas = this.canvas;
 
-        ctx.strokeStyle = '#888'; // Color for the grid lines
+        ctx.strokeStyle = '#888';
         ctx.lineWidth = 1;
 
         for (let y = 0; y <= canvas.height; y += canvas.height * this.gridSize) {
@@ -78,7 +77,7 @@ export class UIManager {
         const elementHeight = element.heightPercent * canvas.height;
 
         if (element.isDragging) {
-            ctx.strokeStyle = '#FF0000'; // Red for element's own guide lines
+            ctx.strokeStyle = '#FF0000';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(0, elementY + elementHeight / 2);
@@ -93,7 +92,7 @@ export class UIManager {
     }
 
     handleMouseDown(mouse) {
-        this.elements.forEach(element => {
+        this.elements.sort((a, b) => b.index - a.index).forEach(element => {
             if (edit && element.checkResizeHandleClick(mouse.x, mouse.y, this.canvas)) {
                 const handle = element.checkResizeHandleClick(mouse.x, mouse.y, this.canvas);
 
@@ -102,9 +101,14 @@ export class UIManager {
                     this.resizingElement = element;
                 }
             }else if (edit && element.checkClick(mouse.x, mouse.y, this.canvas)) {
-                element.startDragging(mouse.x, mouse.y, this.canvas);
-                this.draggingElement = element;
-            } else {
+                if (!this.draggingElement) {
+                    element.startDragging(mouse.x, mouse.y, this.canvas);
+                    this.draggingElement = element;
+                    console.log(this.draggingElement);
+                }
+            } else if(!edit && element.isDraggable && element.checkHandleClick(mouse.x, mouse.y, this.canvas) && element.visible) {
+                element.startHandle(mouse.x, mouse.y, this.canvas);
+            }else if(!edit && element.visible) {
                 if (element.checkClick(mouse.x, mouse.y, this.canvas)) {
                     element.onClick();
                 }
@@ -115,15 +119,23 @@ export class UIManager {
     handleMouseMove(mouse) {
         if (this.resizingElement) {
             this.resizingElement.updateSize(mouse.x, mouse.y, this.canvas);
-        }else if (this.draggingElement) {
+        } else if (this.draggingElement) {
             this.draggingElement.updatePosition(mouse.x, mouse.y, this.canvas);
         } else {
             this.elements.forEach(element => {
                 element.checkHover(mouse.x, mouse.y, this.canvas);
+                if (element.hovering) {
+                    element.opacity = 0.8;
+                } else {
+                    element.opacity = 1;
+                }
+
+                if (element.isDraggable === true && element.draggingHandle) {
+                    element.updateHandlePosition(mouse.x, mouse.y, this.canvas);
+                }
             });
         }
     }
-
     handleMouseUp(mouse) {
         if (this.resizingElement) {
             this.resizingElement.stopResizing();
@@ -155,7 +167,12 @@ export class UIManager {
             this.renderGuideLines();
         }
 
-        this.elements.sort((a, b) => a.index - b.index).forEach(element => {
+        this.elements.sort((a, b) => a.index - b.index).filter(element => {
+            if (edit) {
+                return element;
+            }
+            return element.visible;
+        }).forEach(element => {
             const scaled = this.scale(element);
             element.render(this.graphicEngine, scaled);
 
@@ -189,17 +206,47 @@ export class UIManager {
             }
         })
 
-        const editButton = new UIButton(0.17, 0.04, 0.08, 0.02, "Edit", () => {
-            eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
-
+        const editButton = new UIButton(0.17, 0.05, 0.08, 0.02, "Edit", () => {
+            eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {force: true});
             window.edit = !window.edit;
+        }).setIndex(1);
+
+        const debugCollisionButton = new UIButton(0.26, 0.05, 0.08, 0.02, "DEBUG", () => {
+            eventHandler.dispatchEvent(EventType.TOGGLE_DEBUG, {});
+        }).setIndex(1);
+
+        const slowMoToggleButton = new UIButton(0.26, 0.01, 0.08, 0.02, "SLOWMO", () => {
+            eventHandler.dispatchEvent(EventType.TOGGLE_SLOWMO, {speed: 0});
         }).setIndex(1);
 
         const box = new Box(0, 0, 1, 0.09)
         box.color = 'black';
 
-        this.addElement(box);
-        this.addElement(startButton);
+        const gameSpeedInfo = new UIText(0.385, 0.02, 'test', '10px', 'lime').setIndex(5).setTextAlign('left')
+        gameSpeedInfo.visible = false;
+
+        const gameSpeedSlider = new UISlider(0.35, 0.01, 0.08, 0.01, 0, 1, 1, (value) => {
+            eventHandler.dispatchEvent(EventType.GAME_SPEED_CHANGE, {speed: value});
+
+            gameSpeedInfo.text = Math.floor(value * 100) / 100;
+        });
+
+        eventHandler.addEventHandler(EventType.SLOWMO_CHANGE, data => {
+            gameSpeedSlider.visible = data.slowmo === true;
+            gameSpeedInfo.visible = data.slowmo === true;
+            gameSpeedSlider.handlePercentX = 0;
+            gameSpeedInfo.text = 0;
+        })
+
+        gameSpeedSlider.visible = false;
+
+        this.addElement(box, 0);
+        this.addElement(editButton, 5);
+        this.addElement(debugCollisionButton, 5);
+        this.addElement(slowMoToggleButton, 5);
+        this.addElement(startButton, 5);
+        this.addElement(gameSpeedSlider, 10);
+        this.addElement(gameSpeedInfo, 10);
     }
 
     renderMainMenu() {

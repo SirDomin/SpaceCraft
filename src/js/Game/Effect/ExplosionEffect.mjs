@@ -5,7 +5,7 @@ export class ExplosionEffect extends GameObject {
     constructor(x, y, radius, numParticles = 50, numFragments = 10) {
         super(x - radius, y - radius, radius * 2, radius * 2);
         this.age = 0;
-        this.duration = 1.5; // Duration of the explosion in seconds
+        this.duration = 1.5;
         this.radius = radius;
 
         this.particles = [];
@@ -56,12 +56,12 @@ export class ExplosionEffect extends GameObject {
                 y: this.y + this.height / 2,
                 vx: vx,
                 vy: vy,
-                width: Math.random() * 8 + 4, // Fragment size
+                width: Math.random() * 8 + 4,
                 height: Math.random() * 8 + 4,
                 age: 0,
-                lifespan: Math.random() * 1 + 0.5, // Longer lifespan for fragments
+                lifespan: Math.random() * 1 + 0.5,
                 rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.2 // Random rotation speed
+                rotationSpeed: (Math.random() - 0.5) * 0.2
             });
         }
     }
@@ -78,7 +78,6 @@ export class ExplosionEffect extends GameObject {
             return;
         }
 
-        // Update particles
         this.particles = this.particles.filter(particle => {
             particle.age += deltaTime;
             if (particle.age < particle.lifespan) {
@@ -122,7 +121,7 @@ export class ExplosionEffect extends GameObject {
             ctx.save();
             ctx.translate(fragment.x, fragment.y);
             ctx.rotate(fragment.rotation);
-            ctx.fillStyle = '#5C4033'; // Brown color for debris
+            ctx.fillStyle = '#5C4033';
             ctx.fillRect(-fragment.width / 2, -fragment.height / 2, fragment.width, fragment.height);
             ctx.restore();
         });

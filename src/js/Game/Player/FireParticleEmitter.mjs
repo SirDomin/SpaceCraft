@@ -1,7 +1,4 @@
-// File: FireParticleEmitter.mjs
-
 import { FireParticle } from "./FireParticle.mjs";
-import { EventType } from "../../Event/EventType.mjs";
 
 export class FireParticleEmitter {
     constructor(x, y, emitRate, speed, particleLifespan, particleSize) {
@@ -13,6 +10,14 @@ export class FireParticleEmitter {
         this.particleSize = particleSize;
         this.timeSinceLastEmit = 0;
         this.particles = [];
+    }
+
+    updateParticles(deltaTime) {
+        this.particles.forEach(particle => {
+            particle.update(deltaTime);
+        })
+
+        this.particles = this.particles.filter(particle => {return particle.age < particle.lifespan})
     }
 
     update(deltaTime, spaceshipVelocityX, spaceshipVelocityY) {
@@ -31,12 +36,14 @@ export class FireParticleEmitter {
             const particle = new FireParticle(
                 this.x, this.y, velocityX, velocityY, randomSize, randomLifespan
             );
-
-            eventHandler.dispatchEvent(EventType.OBJECT_CREATED, particle);
+            this.particles.push(particle);
         }
     }
 
     render(graphicEngine) {
+        this.particles.forEach(particle => {
+            particle.render(graphicEngine);
+        })
     }
 
     renderOnMinimap() {

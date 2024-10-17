@@ -27,22 +27,25 @@ export class GameEngine {
         this.uiManager = new UIManager(this);
 
         this.mapManager = new MapManager().setPosition(graphicEngine.canvas.width, 75).setSize(70);
-        this.lastTime = 0; // Time of the last frame
-        this.frameCount = 0; // Number of frames counted
-        this.fps = 0; // FPS value
+        this.lastTime = 0;
+        this.frameCount = 0;
+        this.fps = 0;
         this.accumulatedTime = 0;
+        this.gameSpeed = null;
+
+        this.refreshrate = 200;
 
         this.debugData = {
-            fps: new UIText(0.07, 0.01, 'test', '10px', 'lime').setIndex(1).init(),
-            position: new UIText(0.07, 0.02, 'test', '10px', 'lime').setIndex(1).init(),
-            rendering: new UIText(0.07, 0.03, 'test', '10px', 'lime').setIndex(1).init(),
-            calculations: new UIText(0.07, 0.04, 'test', '10px', 'lime').setIndex(1).init(),
+            fps: new UIText(0.07, 0.01, 'test', '10px', 'lime').setIndex(5).init(),
+            position: new UIText(0.07, 0.02, 'test', '10px', 'lime').setIndex(5).init(),
+            rendering: new UIText(0.07, 0.03, 'test', '10px', 'lime').setIndex(5).init(),
+            calculations: new UIText(0.07, 0.04, 'test', '10px', 'lime').setIndex(5).init(),
         }
 
         this.offsetY = 75;
         eventHandler.addEventHandler(EventType.PLAYER_ROTATE, (data) => {
             this.updateCamera(data.rotation);
-        }, 'player.rotation', false, 10)
+        }, 'player.rotation', false, 10).debug = false
 
         eventHandler.addEventHandler(EventType.OBJECT_CREATED, object => {
             this.addGameObject(object);
@@ -56,8 +59,20 @@ export class GameEngine {
             eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
         }, true);
 
-        eventHandler.addEventHandler(EventType.TOGGLE_PAUSE, () => {
-            this.togglePause();
+        eventHandler.addEventHandler(EventType.TOGGLE_PAUSE, (eventData) => {
+            this.togglePause(eventData);
+        })
+
+        eventHandler.addEventHandler(EventType.TOGGLE_SLOWMO, (eventData) => {
+            this.toggleSlowmo(eventData);
+        })
+
+        eventHandler.addEventHandler(EventType.GAME_SPEED_CHANGE, (eventData) => {
+            this.changeGameSpeed(eventData);
+        })
+
+        eventHandler.addEventHandler(EventType.TOGGLE_DEBUG, (eventData) => {
+            this.toggleDebug(eventData);
         })
 
         eventHandler.addEventHandler(EventType.PROJECTILE_HIT, (eventData) => {
@@ -75,15 +90,23 @@ export class GameEngine {
                 case 'void_rift':
                     this.effectEngine.applyVoidRiftEffect(x, y, projectile);
                     break;
-                // Add more cases as needed
                 default:
-                    // No special effect
                     break;
             }
         });
+
+        eventHandler.addEventHandler(EventType.RENDER_COLLISION, vertices => {
+            this.debugCollisionPoints(vertices);
+        }).debug = false
     }
 
-    togglePause() {
+    togglePause(data = null) {
+        if (data && data.force === true) {
+            this.isPaused = true;
+            eventHandler.dispatchEvent(EventType.GAME_STATE_CHANGE, {state: GameState.PAUSE})
+
+            return;
+        }
         if (window.edit === true) {
             window.edit = false;
 
@@ -91,10 +114,10 @@ export class GameEngine {
                 this.isPaused = false;
             }
 
-            return;
+        } else {
+            this.isPaused = !this.isPaused;
         }
 
-        this.isPaused = !this.isPaused;
         if (this.isPaused) {
             console.log('Game Paused');
         } else {
@@ -109,8 +132,28 @@ export class GameEngine {
         } else {
             state = GameState.GAME;
         }
-        
+
         eventHandler.dispatchEvent(EventType.GAME_STATE_CHANGE, {state: state})
+    }
+
+    toggleSlowmo(eventData) {
+        if (this.gameSpeed !== null) {
+            this.gameSpeed = null
+        } else {
+            this.gameSpeed = 0;
+        }
+
+        eventHandler.dispatchEvent(EventType.SLOWMO_CHANGE, {slowmo: this.gameSpeed !== null});
+    }
+
+    changeGameSpeed(eventData) {
+        this.gameSpeed = eventData.speed;
+    }
+
+    toggleDebug(eventData) {
+        window.debug = !window.debug;
+
+        eventHandler.dispatchEvent(EventType.DEBUG_MODE_CHANGE, {debug: window.debug});
     }
 
     pause() {
@@ -128,7 +171,7 @@ export class GameEngine {
             this.gameObjects.push(obj);
         }
 
-        // const asteroid = new Asteroid(this.player.x, this.player.y);
+        const asteroid = new Asteroid(this.player.x, this.player.y);
         // this.gameObjects.push(asteroid);
 
     }
@@ -290,23 +333,10 @@ export class GameEngine {
     }
 
     renderDebugInfo() {
-        // this.graphicEngine.ctx.fillStyle = 'black';
-        // this.graphicEngine.ctx.font = '10px Arial';
-        // this.graphicEngine.ctx.textAlign = 'left';
-        // this.graphicEngine.drawSquare(0, 0, this.viewportWidth, this.offsetY, 'black');
-        // this.graphicEngine.writeText(`FPS: ${Math.floor(this.fps)}`, 10, 10, 'yellow');
-        // // this.graphicEngine.writeText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`, 10, 20, 'yellow');
-        // this.graphicEngine.writeText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`, 10, 30, 'yellow');
-        // this.graphicEngine.writeText(`Calculations: ${this.visibleObjectsCalculations}`, 10, 40, 'yellow');
-        //
-        // this.interfaceElements.forEach(interfaceElement => {
-        //     interfaceElement.render(this.graphicEngine);
-        // });
-        this.debugData.fps.setText(`FPS: ${Math.floor(this.fps)}`)
-        this.debugData.rendering.setText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`)
-        this.debugData.position.setText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`)
-        this.debugData.calculations.setText(`Calculations: ${this.visibleObjectsCalculations}`)
-
+        this.debugData.fps.setText(`FPS: ${Math.floor(this.fps)}`);
+        this.debugData.rendering.setText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`);
+        this.debugData.position.setText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`);
+        this.debugData.calculations.setText(`Calculations: ${this.visibleObjectsCalculations}`);
 
         this.debug();
     }
@@ -316,16 +346,41 @@ export class GameEngine {
             const cameraOffsetX = this.getCameraPosition().x;
             const cameraOffsetY = this.getCameraPosition().y;
 
-            this.player.getVertices(true).forEach(v => {
-                gameEngine.graphicEngine.drawSquare(v.x - cameraOffsetX - 1, v.y - cameraOffsetY - 1, 2, 2, 'red')
-            });
+            eventHandler.dispatchEvent(EventType.RENDER_COLLISION, this.player.getVertices(true).map(vertex => {
+                return {
+                    x: vertex.x - cameraOffsetX,
+                    y: vertex.y - cameraOffsetY,
+                }
+            }));
         }
     }
 
+    debugCollisionPoints(vertices) {
+        const ctx = this.graphicEngine.ctx;
+
+        ctx.beginPath();
+        const firstVertex = vertices[0];
+
+        ctx.moveTo(firstVertex.x, firstVertex.y);
+
+        vertices.forEach((vertex, index) => {
+            if (index === 0) return;
+
+            ctx.lineTo(vertex.x, vertex.y);
+        });
+
+        ctx.lineTo(firstVertex.x, firstVertex.y);
+
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
     start() {
+
         this.lastTime = performance.now();
         this.accumulatedTime = 0;
-        this.timeStep = 1000 / 60; // Fixed time step in milliseconds (60 updates per second)
+        this.timeStep = 1000 / this.refreshrate;
 
         const loop = (currentTime) => {
             this.frame(currentTime);
@@ -341,13 +396,23 @@ export class GameEngine {
 
         this.accumulatedTime += deltaTime;
 
-        if (!this.isPaused) {
-            while (this.accumulatedTime >= this.timeStep) {
-                this.update(this.timeStep / 1000);
-                this.accumulatedTime -= this.timeStep;
-            }
+        if (this.gameSpeed !== null && !this.isPaused) {
+            const speed = this.fps / this.refreshrate;
+
+            const scaledTimeStep = this.gameSpeed * this.timeStep / speed;
+
+            this.update(scaledTimeStep / 1000);
+
+            this.accumulatedTime = 0;
         } else {
-            eventHandler.tick(0);
+            if (!this.isPaused) {
+                while (this.accumulatedTime >= this.timeStep) {
+                    this.update(this.timeStep / 1000);
+                    this.accumulatedTime -= this.timeStep;
+                }
+            } else {
+                eventHandler.tick(0);
+            }
         }
 
         this.render();

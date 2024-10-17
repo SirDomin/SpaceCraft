@@ -8,8 +8,8 @@ export class Particle {
         this.velocityY = velocityY;
         this.size = size;
         this.color = color;
-        this.lifespan = lifespan; // How long the particle lives (in milliseconds)
-        this.age = 0; // Time that the particle has existed
+        this.lifespan = lifespan;
+        this.age = 0;
 
         this.alpha = 1.0;
     }
@@ -35,14 +35,5 @@ export class Particle {
         const ctx = graphicEngine.ctx;
         ctx.fillStyle = 'red';
         ctx.fillRect(this.x, this.y, 10, 10);
-
-        // ctx.save();
-        // ctx.globalAlpha = this.alpha;
-        // ctx.fillStyle = this.color;
-        //
-        // ctx.beginPath();
-        // ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        // ctx.fill();
-        // ctx.restore();
     }
 }
