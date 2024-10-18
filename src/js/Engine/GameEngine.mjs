@@ -30,10 +30,12 @@ export class GameEngine {
         this.lastTime = 0;
         this.frameCount = 0;
         this.fps = 0;
+        this.displayFps = 0;
+
         this.accumulatedTime = 0;
         this.gameSpeed = null;
 
-        this.refreshrate = 200;
+        this.refreshrate = 120;
 
         this.debugData = {
             fps: new UIText(0.07, 0.01, 'test', '10px', 'lime').setIndex(5).init(),
@@ -334,7 +336,7 @@ export class GameEngine {
     }
 
     renderDebugInfo() {
-        this.debugData.fps.setText(`FPS: ${Math.floor(this.fps)}`);
+        this.debugData.fps.setText(`FPS: ${Math.floor(this.displayFps)}`);
         this.debugData.rendering.setText(`Rendering: ${this.getVisibleGameObjects().length} / ${this.gameObjects.length}`);
         this.debugData.position.setText(`Position: X: ${Math.floor(this.player.x)} Y: ${Math.floor(this.player.y)}`);
         this.debugData.calculations.setText(`Calculations: ${this.visibleObjectsCalculations}`);
@@ -347,7 +349,7 @@ export class GameEngine {
             const cameraOffsetX = this.getCameraPosition().x;
             const cameraOffsetY = this.getCameraPosition().y;
 
-            eventHandler.dispatchEvent(EventType.RENDER_COLLISION, this.player.getVertices(true).map(vertex => {
+            eventHandler.dispatchEvent(EventType.RENDER_COLLISION, this.player.getVertices().map(vertex => {
                 return {
                     x: vertex.x - cameraOffsetX,
                     y: vertex.y - cameraOffsetY,
@@ -419,6 +421,15 @@ export class GameEngine {
         this.render();
 
         this.fps = 1000 / deltaTime;
+
+        this.frameCount = (this.frameCount || 0) + 1;
+        this.totalTime = (this.totalTime || 0) + deltaTime;
+
+        if (this.frameCount >= 100) {
+            this.displayFps = (1000 * this.frameCount) / this.totalTime;
+            this.frameCount = 0;
+            this.totalTime = 0;
+        }
     }
 
     update(deltaTime) {
