@@ -2,11 +2,12 @@ import {GameObject} from "../Object/GameObject.mjs";
 import {EventType} from "../../Event/EventType.mjs";
 
 export class ExplosionEffect extends GameObject {
-    constructor(x, y, radius, numParticles = 50, numFragments = 10) {
+    constructor(x, y, radius, numParticles = 10, numFragments = 10, image = null) {
         super(x - radius, y - radius, radius * 2, radius * 2);
         this.age = 0;
         this.duration = 1.5;
         this.radius = radius;
+        this.image = image;
 
         this.particles = [];
         this.fragments = [];
@@ -15,9 +16,8 @@ export class ExplosionEffect extends GameObject {
         this.createFragments(numFragments);
     }
 
-    static explode(x, y, radius, numParticles = 50, numFragments = 0) {
-        const explosion = new ExplosionEffect(x, y, radius, numParticles, numFragments);
-
+    static explode(x, y, radius, numParticles = 10, numFragments = 20, image = null) {
+        const explosion = new ExplosionEffect(x, y, radius, numParticles, numFragments, image);
         eventHandler.dispatchEvent(EventType.OBJECT_CREATED, explosion);
     }
 
@@ -35,17 +35,34 @@ export class ExplosionEffect extends GameObject {
                 vy: vy,
                 radius: Math.random() * 3 + 2,
                 age: 0,
-                lifespan: Math.random() * 0.8 + 0.3,
-                color: this.getRandomExplosionColor()
+                lifespan: Math.random() + 0.5,
+                color: this.getRandomParticleColor(),
+                type: this.getParticleType()
             });
         }
     }
 
-    renderOnMinimap(minimap, graphicEngine) {
-    }
-
     createFragments(numFragments) {
+        if (!this.image) return;
+
+        const fragmentCanvas = document.createElement('canvas');
+        fragmentCanvas.width = this.image.width;
+        fragmentCanvas.height = this.image.height;
+        const fragmentCtx = fragmentCanvas.getContext('2d');
+        fragmentCtx.drawImage(this.image, 0, 0);
+
+        const fragmentWidth = this.image.width / Math.sqrt(numFragments);
+        const fragmentHeight = this.image.height / Math.sqrt(numFragments);
+
         for (let i = 0; i < numFragments; i++) {
+            const row = Math.floor(i / Math.sqrt(numFragments));
+            const col = i % Math.floor(Math.sqrt(numFragments));
+
+            const sx = col * fragmentWidth;
+            const sy = row * fragmentHeight;
+
+            const fragmentImage = fragmentCtx.getImageData(sx, sy, fragmentWidth, fragmentHeight);
+
             const angle = Math.random() * Math.PI * 2;
             const speed = Math.random() * 100 + 50;
             const vx = Math.cos(angle) * speed;
@@ -56,19 +73,31 @@ export class ExplosionEffect extends GameObject {
                 y: this.y + this.height / 2,
                 vx: vx,
                 vy: vy,
-                width: Math.random() * 8 + 4,
-                height: Math.random() * 8 + 4,
+                width: fragmentWidth,
+                height: fragmentHeight,
+                imageData: fragmentImage,
                 age: 0,
-                lifespan: Math.random() * 1 + 0.5,
+                lifespan: Math.random() * 1 + 1,
                 rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.2
+                rotationSpeed: (Math.random() - 0.5) * 2,
+                opacity: 1
             });
         }
     }
 
-    getRandomExplosionColor() {
-        const colors = ['rgba(255, 69, 0, 1)', 'rgba(255, 140, 0, 1)', 'rgba(255, 215, 0, 1)', 'rgba(255, 255, 255, 1)'];
+    getRandomParticleColor() {
+        const colors = [
+            'rgba(255, 69, 0, 1)',     // Orange red
+            'rgba(255, 140, 0, 1)',    // Dark orange
+            'rgba(255, 215, 0, 1)',    // Gold
+            'rgba(255, 255, 255, 1)'   // White
+        ];
         return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    getParticleType() {
+        const types = ['smoke', 'fire', 'spark'];
+        return types[Math.floor(Math.random() * types.length)];
     }
 
     update(deltaTime) {
@@ -93,7 +122,8 @@ export class ExplosionEffect extends GameObject {
             if (fragment.age < fragment.lifespan) {
                 fragment.x += fragment.vx * deltaTime;
                 fragment.y += fragment.vy * deltaTime;
-                fragment.rotation += fragment.rotationSpeed;
+                fragment.rotation += fragment.rotationSpeed * deltaTime;
+                fragment.opacity = 1 - (fragment.age / fragment.lifespan);
                 return true;
             }
             return false;
@@ -102,30 +132,67 @@ export class ExplosionEffect extends GameObject {
 
     render(graphicEngine) {
         const ctx = graphicEngine.ctx;
-        const opacity = 1 - (this.age / this.duration);
+        const flashOpacity = Math.max(0, 1 - (this.age / (this.duration * 0.2)));
 
-        ctx.save();
-        ctx.globalAlpha = opacity;
+        if (flashOpacity > 0) {
+            ctx.save();
+            ctx.globalAlpha = flashOpacity * 0.5;
+            ctx.fillStyle = 'rgba(255, 255, 200, 1)';
+            ctx.beginPath();
+            ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.radius * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
 
         this.particles.forEach(particle => {
-            const particleOpacity = 1 - (particle.age / particle.lifespan);
-            ctx.fillStyle = particle.color;
-            ctx.globalAlpha = particleOpacity;
-            ctx.beginPath();
-            ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-            ctx.fill();
-        });
+            const lifeRatio = particle.age / particle.lifespan;
+            let opacity = 1 - lifeRatio;
+            opacity = Math.max(0, opacity);
 
-        this.fragments.forEach(fragment => {
-            ctx.globalAlpha = 1 - (fragment.age / fragment.lifespan);
             ctx.save();
-            ctx.translate(fragment.x, fragment.y);
-            ctx.rotate(fragment.rotation);
-            ctx.fillStyle = '#5C4033';
-            ctx.fillRect(-fragment.width / 2, -fragment.height / 2, fragment.width, fragment.height);
+            ctx.globalAlpha = opacity;
+
+            switch (particle.type) {
+                case 'fire':
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                case 'smoke':
+                    ctx.fillStyle = `rgba(50, 50, 50, ${opacity * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.radius * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                case 'spark':
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(particle.x, particle.y);
+                    ctx.lineTo(particle.x - particle.vx * 0.05, particle.y - particle.vy * 0.05);
+                    ctx.stroke();
+                    break;
+            }
+
             ctx.restore();
         });
 
-        ctx.restore();
+        this.fragments.forEach(fragment => {
+            ctx.save();
+            ctx.globalAlpha = fragment.opacity;
+            ctx.translate(fragment.x, fragment.y);
+            ctx.rotate(fragment.rotation);
+
+            const fragmentCanvas = document.createElement('canvas');
+            fragmentCanvas.width = fragment.width;
+            fragmentCanvas.height = fragment.height;
+            const fragmentCtx = fragmentCanvas.getContext('2d');
+            fragmentCtx.putImageData(fragment.imageData, 0, 0);
+
+            ctx.drawImage(fragmentCanvas, -fragment.width / 2, -fragment.height / 2);
+
+            ctx.restore();
+        });
     }
 }

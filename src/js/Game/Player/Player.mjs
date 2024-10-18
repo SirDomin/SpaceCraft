@@ -9,10 +9,10 @@ import {Projectile} from "./Projectile.mjs";
 import {EntityTypes} from "../Object/EntityTypes.mjs";
 import {Weapon} from "./Weapon.mjs";
 import {UIProgressBar} from "../Interface/Element/UIProgressBar.mjs";
-import {FireParticleEmitter} from "./FireParticleEmitter.mjs";
 import {Hitmark} from "../Object/Hitmark.mjs";
 import {ExplosionEffect} from "../Effect/ExplosionEffect.mjs";
 import {EnemyDestruction} from "../Object/EnemyDestruction.mjs";
+import {ThrustParticleEmitter} from "./ThrustParticleEmitter.mjs";
 
 export class Player extends GameObject {
 
@@ -20,17 +20,22 @@ export class Player extends GameObject {
         super(x, y, w, h);
 
         this.rotation = -Math.PI / 2;
-        this.clicked = false;
-        this.rotationSpeed = 150;
-        this.speed = 400;
+        this.rotationSpeed = 250;
+        this.acceleration = 1000;
+        this.deceleration = 300;
+        this.maxSpeed = 400;
+        this.velocityX = 0;
+        this.velocityY = 0;
 
         this.maxPartDistance = 100;
+
+        this.weaponSlots = [];
         this.weapons = [
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
-            // Weapon.fromJSON(this, loader.getResource('weapons', 'Single Rifle')),
-            // Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
+            Weapon.fromJSON(this, loader.getResource('weapons', 'Single Rifle')),
+            Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
-            // Weapon.fromJSON(this, loader.getResource('weapons', 'Spread Shot')),
+            Weapon.fromJSON(this, loader.getResource('weapons', 'Spread Shot')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'EMP Blaster')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Cannon Launcher')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Acidic Torpedo Launcher')),
@@ -55,7 +60,6 @@ export class Player extends GameObject {
 
         this.currentPart = null;
 
-        this.weaponSlots = [];
 
         this.collisionObjects = [
             EntityTypes.ENEMY,
@@ -94,9 +98,7 @@ export class Player extends GameObject {
             }, true);
         });
 
-        this.engineEmitter = new FireParticleEmitter(
-            this.x, this.y + this.height, 10, 10, 0.2, 10
-        );
+        this.thrustEmitter = new ThrustParticleEmitter();
 
         eventHandler.dispatchEvent(EventType.PLAYER_CREATE, {object: this})
     }
@@ -105,27 +107,77 @@ export class Player extends GameObject {
         eventHandler.addKeyHandler(37, deltaTime => {
             const angleDelta = (-this.rotationSpeed * deltaTime * Math.PI) / 180;
             this.rotate(angleDelta);
-        }, false).debug=false;
+        }, false).debug = false;
 
         eventHandler.addKeyHandler(39, deltaTime => {
             const angleDelta = (this.rotationSpeed * deltaTime * Math.PI) / 180;
             this.rotate(angleDelta);
-        }).debug=false;
+        }).debug = false;
 
         eventHandler.addKeyHandler(32, () => {
-            this.shot();
-        }).debug=false;
+            this.shoot();
+        }).debug = false;
 
         eventHandler.addKeyHandler(38, deltaTime => {
-            this.moveForward(deltaTime);
-        }).debug=false;
+            this.accelerate(deltaTime);
+        }).debug = false;
 
         eventHandler.addKeyHandler(40, deltaTime => {
-            this.moveBackward(deltaTime);
-        }).debug=false;
+            this.decelerate(deltaTime);
+        }).debug = false;
+
+        const keyCodes = [49, 50, 51, 52, 53, 54, 55, 56, 57, 48];
+        keyCodes.forEach((keyCode, index) => {
+            eventHandler.addKeyHandler(keyCode, () => {
+                this.activateSlot(index);
+            }, true);
+        });
     }
 
-    shot() {
+    accelerate(deltaTime) {
+        const accelerationX = Math.cos(this.rotation) * this.acceleration * deltaTime;
+        const accelerationY = Math.sin(this.rotation) * this.acceleration * deltaTime;
+
+        this.velocityX += accelerationX;
+        this.velocityY += accelerationY;
+
+        const speed = Math.hypot(this.velocityX, this.velocityY);
+        if (speed > this.maxSpeed) {
+            const scalingFactor = this.maxSpeed / speed;
+            this.velocityX *= scalingFactor;
+            this.velocityY *= scalingFactor;
+        }
+
+    }
+
+    decelerate(deltaTime) {
+        const decelerationX = -Math.cos(this.rotation) * this.acceleration * deltaTime;
+        const decelerationY = -Math.sin(this.rotation) * this.acceleration * deltaTime;
+
+        this.velocityX += decelerationX;
+        this.velocityY += decelerationY;
+
+        const speed = Math.hypot(this.velocityX, this.velocityY);
+        if (speed > this.maxSpeed) {
+            const scalingFactor = this.maxSpeed / speed;
+            this.velocityX *= scalingFactor;
+            this.velocityY *= scalingFactor;
+        }
+
+    }
+
+    applyFriction(deltaTime) {
+        const speed = Math.hypot(this.velocityX, this.velocityY);
+        if (speed > 0) {
+            const decelerationAmount = this.deceleration * deltaTime;
+            const newSpeed = Math.max(0, speed - decelerationAmount);
+            const scalingFactor = newSpeed / speed;
+            this.velocityX *= scalingFactor;
+            this.velocityY *= scalingFactor;
+        }
+    }
+
+    shoot() {
 
     }
 
@@ -215,6 +267,8 @@ export class Player extends GameObject {
     changePosition(x, y) {
         this.x = Math.round((x - this.width / 2))
         this.y = Math.round((y - this.height / 2));
+
+
     }
 
     onMouseUp() {
@@ -249,10 +303,9 @@ export class Player extends GameObject {
     }
 
     render(graphicEngine) {
-        this.engineEmitter.render(graphicEngine);
+        this.thrustEmitter.render(graphicEngine);
 
-        graphicEngine.rotate(this, this.rotation)
-
+        graphicEngine.rotate(this, this.rotation);
         graphicEngine.ctx.rotate(Math.PI / 2);
         this.drawShip(graphicEngine);
 
@@ -260,12 +313,11 @@ export class Player extends GameObject {
             part.render(graphicEngine);
         });
 
-        graphicEngine.restore()
+        graphicEngine.restore();
 
         this.weapons.forEach(part => {
             part.renderAfterTransform(graphicEngine);
         });
-
     }
 
     renderUi(graphicEngine) {
@@ -283,44 +335,21 @@ export class Player extends GameObject {
     update(deltaTime) {
         eventHandler.dispatchEvent(EventType.PLAYER_UPDATE, { object: this });
 
+        this.thrustEmitter.update(deltaTime, this);
+
+        const deltaX = this.velocityX * deltaTime;
+        const deltaY = this.velocityY * deltaTime;
+        this.moveBy(deltaX, deltaY);
+
         this.weapons.forEach(part => {
             part.update(deltaTime);
         });
 
+        this.applyFriction(deltaTime);
+
         this.healthBar.update(this.resources.health.amount(), this.resources.health.max(), 0);
         this.shieldBar.update(this.resources.shield.amount(), this.resources.shield.max(), 0);
 
-        this.engineEmitter.updateParticles(deltaTime);
-    }
-
-    updateEngineEmitters(deltaTime) {
-        const forwardX = Math.cos(this.rotation) * this.speed * deltaTime;
-        const forwardY = Math.sin(this.rotation) * this.speed * deltaTime;
-
-        const leftEngineX = this.x + this.width / 2;
-        const leftEngineY = this.y + this.height / 2;
-
-        this.engineEmitter.x = leftEngineX - 5;
-        this.engineEmitter.y = leftEngineY - 5;
-        this.engineEmitter.particleSize = this.speed * deltaTime;
-        this.engineEmitter.update(deltaTime, forwardX * 20, forwardY * 20);
-    }
-
-    moveBackward(deltaTime) {
-        const distance = this.speed * deltaTime;
-        const deltaX = -Math.cos(this.rotation) * distance;
-        const deltaY = -Math.sin(this.rotation) * distance;
-
-        this.moveBy(deltaX, deltaY);
-    }
-
-    moveForward(deltaTime) {
-        const distance = this.speed * deltaTime;
-        const deltaX = Math.cos(this.rotation) * distance;
-        const deltaY = Math.sin(this.rotation) * distance;
-        this.updateEngineEmitters(deltaTime);
-
-        this.moveBy(deltaX, deltaY);
     }
 
     rotate(angleDelta) {
@@ -334,7 +363,6 @@ export class Player extends GameObject {
         }
 
         const vertices = this.getVertices(true);
-
         const isWithinBounds = vertices.every(
             vertex =>
                 vertex.x >= 0 &&
@@ -348,8 +376,6 @@ export class Player extends GameObject {
         }
 
         this.dispatchRotation();
-
-        return this;
     }
 
     moveBy(deltaX, deltaY) {
@@ -363,7 +389,6 @@ export class Player extends GameObject {
         this.y = newY;
 
         const vertices = this.getVertices(true);
-
         const isWithinBounds = vertices.every(
             vertex =>
                 vertex.x >= 0 &&
@@ -375,6 +400,8 @@ export class Player extends GameObject {
         if (!isWithinBounds) {
             this.x = originalX;
             this.y = originalY;
+            this.velocityX = 0;
+            this.velocityY = 0;
         }
     }
 

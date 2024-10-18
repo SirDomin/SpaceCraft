@@ -152,6 +152,7 @@ export class GameEngine {
 
     toggleDebug(eventData) {
         window.debug = !window.debug;
+        window.renderCollisions = window.debug;
 
         eventHandler.dispatchEvent(EventType.DEBUG_MODE_CHANGE, {debug: window.debug});
     }

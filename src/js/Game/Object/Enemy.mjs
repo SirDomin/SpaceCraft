@@ -519,7 +519,7 @@ export class Enemy extends GameObject {
 
     onDestroy() {
         if (this.isExploder) {
-            ExplosionEffect.explode(this.x + this.width / 2, this.y + this.height / 2, this.width, 50, 10);
+            ExplosionEffect.explode(this.x + this.width / 2, this.y + this.height / 2, this.width, 10, 10);
         }
         if (this.isReplicator) {
             const replicationCount = Utils.random(1, 5);

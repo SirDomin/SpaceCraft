@@ -13,7 +13,7 @@ import {EnemyFactory} from "./Game/Factory/EnemyFactory.mjs";
 window.gameScale = 1.3;
 window.eventHandler = new EventHandler();
 window.debug = false;
-window.renderCollisions = true;
+window.renderCollisions = false;
 window.cameraPos = {};
 window.edit = false;
 
