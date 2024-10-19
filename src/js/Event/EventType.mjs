@@ -21,6 +21,8 @@ export class EventType {
     static SLOWMO_CHANGE = 'slowmo.change';
     static PROJECTILE_RENDER = 'projectile.render';
     static GAME_STATE_CHANGE = 'game.state.change';
+    static GAME_MODE_CHANGE = 'game.mode.change';
+    static GAME_VIEW_CHANGE = 'game.view.change';
     static PLAYER_DESTROYED = 'player.destroyed';
     static RENDER_COLLISION = 'render.collision';
     static GAME_SPEED_CHANGE = 'game.speed.change';

@@ -27,8 +27,6 @@ export class MapManager {
         this.minimap.getBackgroundGradient = this.getBackgroundGradient;
         this.minimap.index = 5;
 
-        eventHandler.dispatchEvent(EventType.UI_ELEMENT_CREATE, this.minimap);
-
         const coordinates = this.getRandomCoordinatesOnMap(2000)
         const galaxy = new Galaxy(coordinates.x, coordinates.y).setGalaxyRadius(400).setNumStars(200);
         this.mapObjects.push(galaxy)

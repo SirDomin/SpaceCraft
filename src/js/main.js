@@ -9,6 +9,7 @@ import {Hitmark} from "./Game/Object/Hitmark.mjs";
 import {ModifiedAudio} from "./Game/Audio/ModifiedAudio.mjs";
 import {Utils} from "./Utils/Utils.mjs";
 import {EnemyFactory} from "./Game/Factory/EnemyFactory.mjs";
+import {GameState} from "./Game/GameState.mjs";
 
 window.gameScale = 1.3;
 window.eventHandler = new EventHandler();
@@ -25,13 +26,10 @@ window.gameEngine = new GameEngine(graphicEngine);
 
 window.loader = new ResourceLoader();
 
-
 window.loader.loadAllResources().then(() => {
-    const player = new Player(5, 10, 50, 50);
-
-    gameEngine.addPlayer(player);
-
     gameEngine.start();
+
+    eventHandler.dispatchEvent(EventType.GAME_STATE_CHANGE, {state: GameState.GAME});
 
     eventHandler.addEventHandler(EventType.GAME_TICK, e => {
         // eventHandler.tick();
@@ -72,12 +70,15 @@ window.loader.loadAllResources().then(() => {
         eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE);
     })
 
-    generateEnemiesInCircle(player, 50, 400);
     // generateEnemiesInCircle(player, 50, 800);
     // generateEnemiesInCircle(player, 50, 1200);
     // generateEnemiesInCircle(player, 50, 1600);
     // generateEnemiesInCircle(player, 50, 2000);
 });
+
+// eventHandler.addEventHandler('test', () => {
+//     generateEnemiesInCircle(gameEngine.player,30, 500)
+// })
 
 function generateEnemiesInCircle(player, x, r) {
     const enemies = [];

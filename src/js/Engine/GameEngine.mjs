@@ -7,6 +7,8 @@ import {UIManager} from "../Ui/UIManager.mjs";
 import {EffectEngine} from "./EffectEngine.mjs";
 import {UIText} from "../Game/Interface/Element/UIText.mjs";
 import {GameState} from "../Game/GameState.mjs";
+import {GameStateManager} from "../Game/Manager/GameStateManager.mjs";
+import {Player} from "../Game/Player/Player.mjs";
 
 export class GameEngine {
     graphicEngine;
@@ -21,6 +23,8 @@ export class GameEngine {
         this.player = null;
 
         this.effectEngine = new EffectEngine(this);
+
+        this.gameStateManager = new GameStateManager(this);
 
         this.viewportWidth = this.graphicEngine.canvas.width;
         this.viewportHeight = this.graphicEngine.canvas.height;
@@ -38,10 +42,10 @@ export class GameEngine {
         this.refreshrate = 120;
 
         this.debugData = {
-            fps: new UIText(0.07, 0.01, 'test', '10px', 'lime').setIndex(5).init(),
-            position: new UIText(0.07, 0.02, 'test', '10px', 'lime').setIndex(5).init(),
-            rendering: new UIText(0.07, 0.03, 'test', '10px', 'lime').setIndex(5).init(),
-            calculations: new UIText(0.07, 0.04, 'test', '10px', 'lime').setIndex(5).init(),
+            fps: new UIText(0.07, 0.01, 'test', '10px', 'lime').setIndex(5),
+            position: new UIText(0.07, 0.02, 'test', '10px', 'lime').setIndex(5),
+            rendering: new UIText(0.07, 0.03, 'test', '10px', 'lime').setIndex(5),
+            calculations: new UIText(0.07, 0.04, 'test', '10px', 'lime').setIndex(5),
         }
 
         this.offsetY = 75;
@@ -203,6 +207,10 @@ export class GameEngine {
     }
 
     getCameraPosition() {
+        if (!this.player) {
+            return {x: 0, y: 0};
+        }
+
         const cameraX = Math.max(0, Math.min(this.player.x + this.player.width / 2 - this.viewportWidth / 2, this.mapManager.map.width - this.viewportWidth));
         const cameraY = Math.max(0, Math.min(this.player.y + this.player.height / 2 - this.viewportHeight / 2, this.mapManager.map.height - this.viewportHeight));
 
@@ -216,7 +224,7 @@ export class GameEngine {
     renderMinimap() {
         eventHandler.dispatchEvent(EventType.UPDATE_MINIMAP, {
             gameObjects: this.gameObjects,
-            player: this.player,
+            player: this.player || null,
         })
     }
 
@@ -230,10 +238,18 @@ export class GameEngine {
 
         this.player.setCamera(this.viewportWidth, this.viewportHeight);
 
-        this.generateRandomGameObjects(100, 100, 100);
+        // this.generateRandomGameObjects(100, 100, 100);
         // this.generateStructuredGameObjects(50000, 10, 10);
 
-        this.uiManager.generateUI();
+    }
+
+    game() {
+        if (!this.player) {
+            const player = new Player(5, 10, 50, 50);
+            this.addPlayer(player);
+            eventHandler.dispatchEvent('test', {})
+        }
+        this.player.preparePlayerInterface();
     }
 
     handleMouseHover(mouse) {
@@ -282,7 +298,6 @@ export class GameEngine {
             })
         ;
 
-
         if (interfaceClicked) {
             interfaceClicked.onClick()
         }
@@ -294,23 +309,27 @@ export class GameEngine {
         return false;
     }
 
+
+
     render() {
         this.graphicEngine.clear();
 
-        const cameraPos = this.getCameraPosition();
+        if (this.player) {
+            const cameraPos = this.getCameraPosition();
 
-        window.cameraPos = cameraPos;
+            window.cameraPos = cameraPos;
 
-        this.graphicEngine.translate(-cameraPos.x, -cameraPos.y);
+            this.graphicEngine.translate(-cameraPos.x, -cameraPos.y);
 
-        this.renderBackground();
-        this.renderGameObjects();
+            this.renderBackground();
+            this.renderGameObjects();
 
-        this.player.onRender(this.graphicEngine);
+            this.player.onRender(this.graphicEngine);
 
-        this.graphicEngine.restore();
+            this.graphicEngine.restore();
+            this.renderDebugInfo();
+        }
 
-        this.renderDebugInfo();
         this.renderUI();
 
         this.renderMinimap();

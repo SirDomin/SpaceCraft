@@ -33,9 +33,9 @@ export class Player extends GameObject {
         this.weapons = [
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
             Weapon.fromJSON(this, loader.getResource('weapons', 'Single Rifle')),
-            Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
-            Weapon.fromJSON(this, loader.getResource('weapons', 'Spread Shot')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Spread Shot')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'EMP Blaster')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Cannon Launcher')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Acidic Torpedo Launcher')),
@@ -224,8 +224,6 @@ export class Player extends GameObject {
     setCamera(width, height) {
         this.camera.width = width;
         this.camera.height = height;
-
-        this.preparePlayerInterface();
     }
 
     preparePlayerInterface() {

@@ -18,7 +18,7 @@ export class UIManager {
 
         eventHandler.addEventHandler(EventType.UI_ELEMENT_CREATE, (element) => {
             this.addElement(element, element.index);
-        })
+        });
     }
 
     addElement(element, index = 1) {
@@ -194,6 +194,8 @@ export class UIManager {
     }
 
     generateUI() {
+        this.elements = [];
+
         const startButton = new UIButton(0.17, 0.01, 0.08, 0.02, "Pause", () => {
             eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
         });
@@ -240,6 +242,10 @@ export class UIManager {
 
         gameSpeedSlider.visible = false;
 
+        Object.keys(this.gameEngine.debugData).forEach(key => {
+            this.addElement(this.gameEngine.debugData[key], 15);
+        })
+        this.addElement(this.gameEngine.mapManager.minimap, 10);
         this.addElement(box, 0);
         this.addElement(editButton, 5);
         this.addElement(debugCollisionButton, 5);
@@ -250,6 +256,23 @@ export class UIManager {
     }
 
     renderMainMenu() {
+        this.elements = [];
 
+        const startGameButton = new UIButton(0.26, 0.01, 0.08, 0.02, "Start", () => {
+
+        }).setIndex(1);
+
+        const optionsGameButton = new UIButton(0.26, 0.05, 0.08, 0.02, "Options", () => {
+
+        }).setIndex(1);
+
+
+        const creditsGameButton = new UIButton(0.26, 0.09, 0.08, 0.02, "Credits", () => {
+
+        }).setIndex(1);
+
+        this.addElement(startGameButton);
+        this.addElement(optionsGameButton);
+        this.addElement(creditsGameButton);
     }
 }
