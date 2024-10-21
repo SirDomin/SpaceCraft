@@ -36,6 +36,8 @@ export class GameEngine {
         this.fps = 0;
         this.displayFps = 0;
 
+        this.state = null;
+
         this.accumulatedTime = 0;
         this.gameSpeed = null;
 
@@ -62,11 +64,13 @@ export class GameEngine {
         });
 
         eventHandler.addKeyHandler(27, () => {
-            eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
+                eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
         }, true);
 
         eventHandler.addEventHandler(EventType.TOGGLE_PAUSE, (eventData) => {
-            this.togglePause(eventData);
+            if (this.state === GameState.GAME) {
+                this.togglePause(eventData);
+            }
         })
 
         eventHandler.addEventHandler(EventType.TOGGLE_SLOWMO, (eventData) => {
@@ -266,10 +270,12 @@ export class GameEngine {
         const cameraOffsetX = this.getCameraPosition().x;
         const cameraOffsetY = this.getCameraPosition().y;
 
-        const playerElementClicked = this.player.checkClick(mouse);
+        if (this.player) {
+            const playerElementClicked = this.player.checkClick(mouse);
 
-        if (playerElementClicked) {
-            return true;
+            if (playerElementClicked) {
+                return true;
+            }
         }
 
         const selectedObject =

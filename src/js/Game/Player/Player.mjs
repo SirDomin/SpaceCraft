@@ -24,6 +24,9 @@ export class Player extends GameObject {
         this.acceleration = 1000;
         this.deceleration = 300;
         this.maxSpeed = 400;
+
+        this.speedCap = 400;
+
         this.velocityX = 0;
         this.velocityY = 0;
 
@@ -115,7 +118,10 @@ export class Player extends GameObject {
         }).debug = false;
 
         eventHandler.addKeyHandler(32, () => {
-            this.shoot();
+            this.speedCap = this.maxSpeed;
+            this.maxSpeed = this.speedCap * 5;
+        }, true, () => {
+            this.maxSpeed = this.speedCap;
         }).debug = false;
 
         eventHandler.addKeyHandler(38, deltaTime => {

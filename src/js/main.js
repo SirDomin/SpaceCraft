@@ -11,7 +11,7 @@ import {Utils} from "./Utils/Utils.mjs";
 import {EnemyFactory} from "./Game/Factory/EnemyFactory.mjs";
 import {GameState} from "./Game/GameState.mjs";
 
-window.gameScale = 1.3;
+window.gameScale = 1;
 window.eventHandler = new EventHandler();
 window.debug = false;
 window.renderCollisions = false;
@@ -29,7 +29,7 @@ window.loader = new ResourceLoader();
 window.loader.loadAllResources().then(() => {
     gameEngine.start();
 
-    eventHandler.dispatchEvent(EventType.GAME_STATE_CHANGE, {state: GameState.GAME});
+    eventHandler.dispatchEvent(EventType.GAME_STATE_CHANGE, {state: GameState.MENU});
 
     eventHandler.addEventHandler(EventType.GAME_TICK, e => {
         // eventHandler.tick();
@@ -70,7 +70,6 @@ window.loader.loadAllResources().then(() => {
         eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE);
     })
 
-    // generateEnemiesInCircle(player, 50, 800);
     // generateEnemiesInCircle(player, 50, 1200);
     // generateEnemiesInCircle(player, 50, 1600);
     // generateEnemiesInCircle(player, 50, 2000);

@@ -31,7 +31,7 @@ export class ThrustParticleEmitter {
         const velocityY = Math.sin(angle) * speed;
 
         const size = 10 + Math.random() * 5;
-        const lifespan = Math.random() * 0.1 * (playerSpeed / player.maxSpeed);
+        const lifespan = 0.05 * (playerSpeed / player.maxSpeed);
 
         const engineOffsetX = -Math.cos(player.rotation) * (player.height / 2);
         const engineOffsetY = -Math.sin(player.rotation) * (player.height / 2);

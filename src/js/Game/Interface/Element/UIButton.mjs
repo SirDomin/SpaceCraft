@@ -5,6 +5,7 @@ export class UIButton extends UIElement {
         super(xPercent, yPercent, widthPercent, heightPercent);
         this.text = text;
         this.onClickCallback = onClick;
+        this.font = "20px Arial";
     }
 
     render(graphicEngine, scaled) {
@@ -17,7 +18,7 @@ export class UIButton extends UIElement {
 
             ctx.fillStyle = "#FFF";
             ctx.textAlign = "center";
-            ctx.font = "20px Arial";
+            ctx.font = this.font;
             ctx.fillText(this.text, x + width / 2, y + height / 2 + 7);
 
             if (this.hovering) {
@@ -25,6 +26,7 @@ export class UIButton extends UIElement {
                 ctx.lineWidth = 2;
                 ctx.strokeRect(x, y, width, height);
             }
+
         }
     }
 

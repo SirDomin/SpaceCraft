@@ -4,6 +4,7 @@ import {Box} from "../Game/Interface/Element/Box.mjs";
 import {GameState} from "../Game/GameState.mjs";
 import {UISlider} from "../Game/Interface/Element/UISlider.mjs";
 import {UIText} from "../Game/Interface/Element/UIText.mjs";
+import {ScrollableView} from "../Game/Interface/Element/ScrollableView.mjs";
 
 export class UIManager {
     constructor(gameEngine, gridSize = 1) {
@@ -161,6 +162,18 @@ export class UIManager {
         };
     }
 
+    scaleChild(parent, child) {
+        const dimensions = parent.getDimensions(this.canvas);
+        const childDimensions = child.getDimensions(dimensions);
+
+        return {
+            x: childDimensions.x,
+            y: childDimensions.y,
+            width: childDimensions.width,
+            height: childDimensions.height,
+        };
+    }
+
     render() {
         if (edit) {
             this.renderGridLines();
@@ -173,6 +186,12 @@ export class UIManager {
             }
             return element.visible;
         }).forEach(element => {
+            if (element.constructor.name === ScrollableView.prototype.constructor.name) {
+                element.children.forEach(child => {
+                    child.scale = this.scaleChild(element, child);
+                })
+            }
+
             const scaled = this.scale(element);
             element.render(this.graphicEngine, scaled);
 
@@ -182,7 +201,6 @@ export class UIManager {
 
             element.renderResizeHandles(this.graphicEngine, this.canvas);
         });
-
     }
 
     update(deltaTime) {
@@ -257,22 +275,5 @@ export class UIManager {
 
     renderMainMenu() {
         this.elements = [];
-
-        const startGameButton = new UIButton(0.26, 0.01, 0.08, 0.02, "Start", () => {
-
-        }).setIndex(1);
-
-        const optionsGameButton = new UIButton(0.26, 0.05, 0.08, 0.02, "Options", () => {
-
-        }).setIndex(1);
-
-
-        const creditsGameButton = new UIButton(0.26, 0.09, 0.08, 0.02, "Credits", () => {
-
-        }).setIndex(1);
-
-        this.addElement(startGameButton);
-        this.addElement(optionsGameButton);
-        this.addElement(creditsGameButton);
     }
 }

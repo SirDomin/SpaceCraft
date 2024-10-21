@@ -72,10 +72,11 @@ export class EventHandler {
         }
     }
 
-    addKeyHandler(keyCode, callback, single = false) {
+    addKeyHandler(keyCode, callback, single = false, keyUpCallback = false) {
         this.keyHandlers[keyCode] = {
             callback: callback,
             single: single,
+            keyUpCallback: keyUpCallback,
         };
         if (debug) {
             console.log(`Event for key %c${keyCode}%c has been created`, 'color: green; font-weight: bold;', 'color: inherit;');
@@ -140,6 +141,9 @@ export class EventHandler {
         delete this.keysDown[e.keyCode];
 
         if (this.keyHandlers[e.keyCode]){
+            if (this.keyHandlers[e.keyCode].keyUpCallback !== false) {
+                this.keyHandlers[e.keyCode].keyUpCallback();
+            }
             this.keyHandlers[e.keyCode].handled = false;
         }
     }
