@@ -29,7 +29,7 @@ window.loader = new ResourceLoader();
 window.loader.loadAllResources().then(() => {
     gameEngine.start();
 
-    eventHandler.dispatchEvent(EventType.GAME_STATE_CHANGE, {state: GameState.MENU});
+    eventHandler.dispatchEvent(EventType.GAME_STATE_CHANGE, {state: GameState.GAME});
 
     eventHandler.addEventHandler(EventType.GAME_TICK, e => {
         // eventHandler.tick();
@@ -75,6 +75,9 @@ window.loader.loadAllResources().then(() => {
     // generateEnemiesInCircle(player, 50, 2000);
 });
 
+eventHandler.addEventHandler(EventType.SPAWN_ENEMIES, () => {
+   generateEnemiesInCircle(gameEngine.player, 40, 500)
+});
 // eventHandler.addEventHandler('test', () => {
 //     generateEnemiesInCircle(gameEngine.player,30, 500)
 // })

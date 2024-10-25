@@ -258,6 +258,10 @@ export class UIManager {
             gameSpeedInfo.text = 0;
         })
 
+        const spawnEnemies = new UIButton(0.35, 0.05, 0.08, 0.02, "Spawn", () => {
+            eventHandler.dispatchEvent(EventType.SPAWN_ENEMIES);
+        }).setIndex(1);
+
         gameSpeedSlider.visible = false;
 
         Object.keys(this.gameEngine.debugData).forEach(key => {
@@ -265,6 +269,7 @@ export class UIManager {
         })
         this.addElement(this.gameEngine.mapManager.minimap, 10);
         this.addElement(box, 0);
+        this.addElement(spawnEnemies, 5);
         this.addElement(editButton, 5);
         this.addElement(debugCollisionButton, 5);
         this.addElement(slowMoToggleButton, 5);

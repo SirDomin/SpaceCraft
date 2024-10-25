@@ -166,7 +166,7 @@
   {
     "name": "Void Rift Generator",
     "projectileEffect": "void_rift",
-    "projectileEffectRadius": 100,
+    "projectileEffectRadius": 1000,
     "projectileEffectParams": {
       "slowPercentage": 0,
       "duration": 10
@@ -185,6 +185,6 @@
     "accuracy": 100,
     "projectileType": "VOID_ORB",
     "ammoCapacity": 1,
-    "reloadTime": 2
+    "reloadTime": 0.1
   }
 ]

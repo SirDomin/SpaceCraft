@@ -27,5 +27,6 @@ export class EventType {
     static RENDER_COLLISION = 'render.collision';
     static GAME_SPEED_CHANGE = 'game.speed.change';
     static DEBUG_MODE_CHANGE = 'debug.mode.change';
+    static SPAWN_ENEMIES = 'enemies.spawn';
 
 }
