@@ -27,7 +27,7 @@ export class EnemyDestruction {
             enemy.y,
             enemy.width,
             enemy.height,
-            1,
+            0.3,
         );
 
         const explosionSound = loader.getAudio('explosion1');
@@ -92,8 +92,8 @@ export class EnemyDestruction {
             const targetX = centerX + Math.cos(angle) * distance;
             const targetY = centerY + Math.sin(angle) * distance;
 
-            const velocityX = (targetX - (this.x + offsetX)) / this.duration;
-            const velocityY = (targetY - (this.y + offsetY)) / this.duration;
+            const velocityX = (targetX - (this.x + offsetX)) / this.duration * 0.5;
+            const velocityY = (targetY - (this.y + offsetY)) / this.duration * 0.5;
 
             const rotationSpeed = Utils.random(-Math.PI, Math.PI);
 

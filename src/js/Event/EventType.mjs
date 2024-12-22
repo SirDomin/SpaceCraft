@@ -1,6 +1,7 @@
 export class EventType {
     static MOVEMENT = 'movement';
     static GAME_TICK = 'game.tick';
+    static PREVIOUS_STATE = 'state.previous';
     static FPS_TICK = 'game.fps.tick';
     static PLAYER_CREATE = 'player.create';
     static PLAYER_RENDER = 'player.render';
@@ -15,18 +16,22 @@ export class EventType {
     static ENEMY_DESTROYED = 'enemy.destroyed';
     static PROJECTILE_HIT = 'projectile.hit';
     static UI_ELEMENT_CREATE = 'ui.element.create';
+    static UI_ELEMENT_REMOVE = 'ui.element.remove';
     static TOGGLE_PAUSE = 'toggle.pause';
     static TOGGLE_DEBUG = 'toggle.debug';
     static TOGGLE_SLOWMO = 'toggle.slowmo';
     static SLOWMO_CHANGE = 'slowmo.change';
     static PROJECTILE_RENDER = 'projectile.render';
     static GAME_STATE_CHANGE = 'game.state.change';
+    static GAME_STATE_CHANGED = 'game.state.changed';
     static GAME_MODE_CHANGE = 'game.mode.change';
     static GAME_VIEW_CHANGE = 'game.view.change';
+    static GAME_VIEW_CHANGED = 'game.view.changed';
     static PLAYER_DESTROYED = 'player.destroyed';
     static RENDER_COLLISION = 'render.collision';
     static GAME_SPEED_CHANGE = 'game.speed.change';
     static DEBUG_MODE_CHANGE = 'debug.mode.change';
     static SPAWN_ENEMIES = 'enemies.spawn';
+    static EXIT_GAME = 'game.exit';
 
 }

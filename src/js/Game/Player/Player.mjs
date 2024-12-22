@@ -35,14 +35,14 @@ export class Player extends GameObject {
         this.weaponSlots = [];
         this.weapons = [
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
-            // Weapon.fromJSON(this, loader.getResource('weapons', 'Single Rifle')),
+            Weapon.fromJSON(this, loader.getResource('weapons', 'Single Rifle')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Rapid Fire Cannon')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Plasma Rifle')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Spread Shot')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'EMP Blaster')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Cannon Launcher')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Acidic Torpedo Launcher')),
-            Weapon.fromJSON(this, loader.getResource('weapons', 'Void Rift Generator')),
+            // Weapon.fromJSON(this, loader.getResource('weapons', 'Void Rift Generator')),
             // Weapon.fromJSON(this, loader.getResource('weapons', 'Cannon Launcher')),
             // Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 3')),
             // Part.fromJSON(this, loader.getResource('parts', 'Shield Upgrade 4')),

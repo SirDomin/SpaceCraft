@@ -50,7 +50,7 @@ export class Weapon {
 
         eventHandler.addEventHandler(EventType.VISIBLE_OBJECTS_TICK, (eventData) => {
             this.handleVisibleObjects(eventData.gameObjects);
-        });
+        }).debug = false;
     }
 
     static fromJSON(player, jsonData) {

@@ -1,4 +1,5 @@
 import {EventType} from "../../../Event/EventType.mjs";
+import {Utils} from "../../../Utils/Utils.mjs";
 
 export class UIElement {
     constructor(xPercent, yPercent, widthPercent, heightPercent) {
@@ -21,6 +22,8 @@ export class UIElement {
 
         this.isDraggable = false;
         this.isHandled = false;
+
+        this.id = Utils.generateId();
 
         this.initialWidth = null;
         this.initialHeight = null;
@@ -114,6 +117,8 @@ export class UIElement {
         const height = dimensions.height;
 
         this.hovering = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+
+        return this.hovering;
     }
 
     startDragging(mouseX, mouseY, canvas) {

@@ -9,6 +9,7 @@ import {UIText} from "../Game/Interface/Element/UIText.mjs";
 import {GameState} from "../Game/GameState.mjs";
 import {GameStateManager} from "../Game/Manager/GameStateManager.mjs";
 import {Player} from "../Game/Player/Player.mjs";
+import {GameViewState} from "../Game/GameViewState.mjs";
 
 export class GameEngine {
     graphicEngine;
@@ -37,6 +38,7 @@ export class GameEngine {
         this.displayFps = 0;
 
         this.state = null;
+        this.gameState = null;
 
         this.accumulatedTime = 0;
         this.gameSpeed = null;
@@ -64,13 +66,17 @@ export class GameEngine {
         });
 
         eventHandler.addKeyHandler(27, () => {
-                eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
+            eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {});
+            // eventHandler.dispatchEvent(EventType.PREVIOUS_STATE, {});
         }, true);
 
+        eventHandler.addKeyHandler(80, () => {
+            // eventHandler.dispatchEvent(EventType.TOGGLE_PAUSE, {force: true});
+            window.edit = true;
+        }, true)
+
         eventHandler.addEventHandler(EventType.TOGGLE_PAUSE, (eventData) => {
-            if (this.state === GameState.GAME) {
-                this.togglePause(eventData);
-            }
+            this.togglePause(eventData);
         })
 
         eventHandler.addEventHandler(EventType.TOGGLE_SLOWMO, (eventData) => {
@@ -245,6 +251,7 @@ export class GameEngine {
         // this.generateRandomGameObjects(100, 100, 100);
         // this.generateStructuredGameObjects(50000, 10, 10);
 
+        eventHandler.dispatchEvent(EventType.GAME_VIEW_CHANGE, {state: GameViewState.SHOP});
     }
 
     game() {

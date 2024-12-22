@@ -5,6 +5,7 @@ import {GameState} from "../Game/GameState.mjs";
 import {UISlider} from "../Game/Interface/Element/UISlider.mjs";
 import {UIText} from "../Game/Interface/Element/UIText.mjs";
 import {ScrollableView} from "../Game/Interface/Element/ScrollableView.mjs";
+import {GameViewState} from "../Game/GameViewState.mjs";
 
 export class UIManager {
     constructor(gameEngine, gridSize = 1) {
@@ -20,12 +21,20 @@ export class UIManager {
         eventHandler.addEventHandler(EventType.UI_ELEMENT_CREATE, (element) => {
             this.addElement(element, element.index);
         });
+
+        eventHandler.addEventHandler(EventType.UI_ELEMENT_REMOVE, (elementId) => {
+            this.removeElement(elementId)
+        });
     }
 
     addElement(element, index = 1) {
         element.gridSize = this.gridSize;
         element.index = index;
         this.elements.push(element);
+    }
+
+    removeElement(id) {
+        this.elements = this.elements.filter((element) => element.id !== id);
     }
 
     renderGuideLines() {
@@ -93,28 +102,33 @@ export class UIManager {
     }
 
     handleMouseDown(mouse) {
-        this.elements.sort((a, b) => b.index - a.index).forEach(element => {
+        const elements = this.elements.sort((a, b) => b.index - a.index);
+
+        for (const element of elements) {
             if (edit && element.checkResizeHandleClick(mouse.x, mouse.y, this.canvas)) {
                 const handle = element.checkResizeHandleClick(mouse.x, mouse.y, this.canvas);
 
                 if (handle) {
                     element.startResizing(mouse.x, mouse.y, handle, this.canvas);
                     this.resizingElement = element;
+                    break;
                 }
-            }else if (edit && element.checkClick(mouse.x, mouse.y, this.canvas)) {
+            } else if (edit && element.checkClick(mouse.x, mouse.y, this.canvas)) {
                 if (!this.draggingElement) {
                     element.startDragging(mouse.x, mouse.y, this.canvas);
                     this.draggingElement = element;
-                    console.log(this.draggingElement);
+                    break;
                 }
-            } else if(!edit && element.isDraggable && element.checkHandleClick(mouse.x, mouse.y, this.canvas) && element.visible) {
+            } else if (!edit && element.isDraggable && element.checkHandleClick(mouse.x, mouse.y, this.canvas) && element.visible) {
                 element.startHandle(mouse.x, mouse.y, this.canvas);
-            }else if(!edit && element.visible) {
+                break;
+            } else if (!edit && element.visible) {
                 if (element.checkClick(mouse.x, mouse.y, this.canvas)) {
                     element.onClick();
+                    break;
                 }
             }
-        });
+        }
     }
 
     handleMouseMove(mouse) {
@@ -123,18 +137,27 @@ export class UIManager {
         } else if (this.draggingElement) {
             this.draggingElement.updatePosition(mouse.x, mouse.y, this.canvas);
         } else {
-            this.elements.forEach(element => {
-                element.checkHover(mouse.x, mouse.y, this.canvas);
-                if (element.hovering) {
+            const elements = this.elements.sort((a, b) => b.index - a.index);
+
+            let hoveringElement = null;
+
+            for (const element of elements) {
+                const hovering = element.checkHover(mouse.x, mouse.y, this.canvas);
+
+                if (hovering && !hoveringElement) {
+                    hoveringElement = element;
+                    element.hovering = true;
                     element.opacity = 0.8;
+                    break;
                 } else {
+                    element.hovering = false;
                     element.opacity = 1;
                 }
 
                 if (element.isDraggable === true && element.draggingHandle) {
                     element.updateHandlePosition(mouse.x, mouse.y, this.canvas);
                 }
-            });
+            }
         }
     }
     handleMouseUp(mouse) {
@@ -251,6 +274,11 @@ export class UIManager {
             gameSpeedInfo.text = Math.floor(value * 100) / 100;
         });
 
+        const shopGameButton = new UIButton(0.44, 0.01, 0.08, 0.02, "Shop", () => {
+            eventHandler.dispatchEvent(EventType.GAME_VIEW_CHANGE, {state: GameViewState.SHOP});
+        }).setIndex(1);
+
+
         eventHandler.addEventHandler(EventType.SLOWMO_CHANGE, data => {
             gameSpeedSlider.visible = data.slowmo === true;
             gameSpeedInfo.visible = data.slowmo === true;
@@ -276,6 +304,7 @@ export class UIManager {
         this.addElement(startButton, 5);
         this.addElement(gameSpeedSlider, 10);
         this.addElement(gameSpeedInfo, 10);
+        this.addElement(shopGameButton, 10);
     }
 
     renderMainMenu() {

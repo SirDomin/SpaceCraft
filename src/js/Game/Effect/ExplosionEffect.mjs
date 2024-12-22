@@ -5,7 +5,7 @@ export class ExplosionEffect extends GameObject {
     constructor(x, y, radius, numParticles = 10, numFragments = 10, image = null) {
         super(x - radius, y - radius, radius * 2, radius * 2);
         this.age = 0;
-        this.duration = 1.5;
+        this.duration = 0.5;
         this.radius = radius;
         this.image = image;
 
